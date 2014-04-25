@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Proyecto Fin de Carrera</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+        <style>
+            body { margin: 0; overflow: hidden; }
+        </style>
+        <script src="js/libs/three/three.min.js"></script>
+        <script src="js/libs/clases/frameworkWebGL.js"></script>
+        <script src="js/libs/three/ControlesMapa2.js"></script>
+        <script src="js/libs/other/TerrainLoader.js"></script>
+        <script src="js/libs/clases/observable.js"></script>
+        <script src="js/libs/clases/modelo.js"></script>
+        <script src="js/libs/clases/controlador.js"></script>
+        <script src="js/libs/clases/vista.js"></script>
+        <script src="js/libs/clases/aplicacion.js"></script>
+        
+        <script>
+            
+            /*var renderer = null;
+            var scene = null;
+            var camera = null;
+            var mesh = null;*/
+            
+            window.onload = function(){
+                var contenedorWebGL = document.getElementById("webgl");
+                var app = new Aplicacion();
+                app.inicia({container : contenedorWebGL});
+                app.ejecuta();
+            };
+            
+        </script>
+    </head>
+    <body>
+        <div id="webgl"  ></div>
+    </body>
+</html>
