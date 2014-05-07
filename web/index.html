@@ -9,10 +9,10 @@ and open the template in the editor.
         <title>Proyecto Fin de Carrera</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width">
-        <style>
-            body { margin: 0; overflow: hidden; }
-        </style>
+
+        <link rel="stylesheet" type="text/css" href="css/estilo.css" />
         <script src="js/libs/three/three.min.js"></script>
+        <script src="js/libs/other/OBJLoader.js"></script>
         <script src="js/libs/clases/frameworkWebGL.js"></script>
         <script src="js/libs/three/ControlesMapa2.js"></script>
         <script src="js/libs/other/TerrainLoader.js"></script>
@@ -24,10 +24,6 @@ and open the template in the editor.
         
         <script>
             
-            /*var renderer = null;
-            var scene = null;
-            var camera = null;
-            var mesh = null;*/
             
             window.onload = function(){
                 var contenedorWebGL = document.getElementById("webgl");
