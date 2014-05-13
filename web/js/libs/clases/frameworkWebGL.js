@@ -9,7 +9,7 @@
 
 
 // Iniciamos el espacio de nombres
-FwWebGL = [];
+var FwWebGL = [];
 
 /*
  * 

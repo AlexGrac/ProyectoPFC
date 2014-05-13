@@ -10,7 +10,7 @@
 
 /* Se debe cambiar el formato*/
 
-ControlesMapa2 = function(camara, lookAt, dom) {
+ControlesMapa2 = function(camara, lookAt, vista, dom) {
 
     var READY_STATE_UNINITIALIZED = 0;
     var READY_STATE_LOADING = 1;
@@ -19,12 +19,16 @@ ControlesMapa2 = function(camara, lookAt, dom) {
     var READY_STATE_COMPLETE = 4;
 
     var RATON = {DERECHA: 0};
-    var ESTADO = {NADA: 0, ARRASTRA: 1, SUELTA: 2, SCROOL: 3, MOVIMIENTO: 4};
-    var CERO = 10e-8;
+    var ESTADO = {NADA: 0, ARRASTRA: 1, SUELTA: 2, SCROOL: 3, PARADO: 4};
+    var CERO = 10e-4;
     var camara = camara;
     this.dom = (dom !== undefined) ? dom : document;
-    var estado = ESTADO.NADA;
+    var estado = ESTADO.PARADO;
+    var contadorReloj;
     var peticion;
+    
+    // Referencia a su vista para indicar cuando esta parada la camara.
+    this.vista = vista;
 
 
     var a = new THREE.Vector3();
@@ -58,14 +62,19 @@ ControlesMapa2 = function(camara, lookAt, dom) {
         var ly = lookAt.y;
         var lz = lookAt.z;
 
-
+        contadorReloj++;
         switch (estado) {
+            case ESTADO.PARADO:
+                this.vista.camaraParada();
+                estado = ESTADO.NADA;
+            break;
             case ESTADO.ARRASTRA:
                 var factor = y > 1 ? y : 1;
-
+                contadorReloj = 0;
                 camara.position.set(x - desplazamiento.x, y, z - desplazamiento.y);
                 lookAt.set(lx - desplazamiento.x, ly, lz - desplazamiento.y);
-                estado = ESTADO.NADA;
+                estado = ESTADO.PARADO;
+                
                 break;
             case ESTADO.SCROOL:
 
@@ -73,7 +82,7 @@ ControlesMapa2 = function(camara, lookAt, dom) {
                 camara.position.y += zoom * (ly - y) / 20;
                 camara.position.z += zoom * (lz - z) / 20;
 
-                estado = ESTADO.NADA;
+                estado = ESTADO.PARADO;
                 break;
             case ESTADO.SUELTA:
                 var factor = 1.01;
@@ -84,10 +93,13 @@ ControlesMapa2 = function(camara, lookAt, dom) {
                 inercia.x /= factor;
                 inercia.y /= factor;
 
-                if (Math.abs(inercia.x) <= CERO && Math.abs(inercia.y) <= CERO)
-                    estado = ESTADO.NADA;
+
+                if (Math.abs(inercia.x) <= CERO && Math.abs(inercia.y) <= CERO) {
+                    estado = ESTADO.PARADO;
+                }
 
                 break;
+                
         }
 
 
@@ -100,7 +112,6 @@ ControlesMapa2 = function(camara, lookAt, dom) {
     function pulsaRaton(evento) {
 
         a = proyectaPulsacion(evento.clientX, evento.clientY);
-        console.log(evento.clientX + ", " + evento.clientY);
         document.addEventListener('mousemove', mueveRaton, false);
     }
     ;
@@ -110,7 +121,6 @@ ControlesMapa2 = function(camara, lookAt, dom) {
         document.body.style.cursor = 'move';
         if (evento.button === RATON.DERECHA) {
             b = proyectaPulsacion(evento.clientX, evento.clientY);
-
             desplazamiento.x = b.x - a.x;
             desplazamiento.y = b.z - a.z;
 
@@ -119,7 +129,7 @@ ControlesMapa2 = function(camara, lookAt, dom) {
     ;
 
     function sueltaRaton(evento) {
-        if (estado !== ESTADO.NADA) {
+        if (contadorReloj < 5) {
             estado = ESTADO.SUELTA;
             inercia.x = desplazamiento.x;
             inercia.y = desplazamiento.y;
@@ -216,7 +226,7 @@ ControlesMapa2 = function(camara, lookAt, dom) {
     function parseaRespuesta() {
 
         var municipiosJSON = JSON.parse(peticion.responseText);
-        
+
         mun = municipiosJSON.municipios;
     }
 
