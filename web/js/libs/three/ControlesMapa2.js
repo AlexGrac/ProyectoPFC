@@ -22,14 +22,14 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
     var ESTADO = {NADA: 0, ARRASTRA: 1, SUELTA: 2, SCROOL: 3, PARADO: 4};
     var CERO = 10e-4;
     var camara = camara;
-    this.dom = (dom !== undefined) ? dom : document;
-    var estado = ESTADO.PARADO;
+    var dom = (dom !== undefined) ? dom : document;
+    var estado = ESTADO.NADA;
     var contadorReloj;
     var peticion;
     
     // Referencia a su vista para indicar cuando esta parada la camara.
     this.vista = vista;
-
+    this.vista.setControles(this);
 
     var a = new THREE.Vector3();
     var b = new THREE.Vector3();
@@ -41,6 +41,7 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
 
 
     var plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    
 
     //variables para el zoom
     var zoom = 1;
@@ -69,32 +70,41 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
                 estado = ESTADO.NADA;
             break;
             case ESTADO.ARRASTRA:
-                var factor = y > 1 ? y : 1;
-                contadorReloj = 0;
-                camara.position.set(x - desplazamiento.x, y, z - desplazamiento.y);
-                lookAt.set(lx - desplazamiento.x, ly, lz - desplazamiento.y);
+                this.vista._actualizaVentana = true;
+                if (this.estaDentro(desplazamiento.x, desplazamiento.y)){
+                    var factor = y > 1 ? y : 1;
+                    contadorReloj = 0;
+                    camara.position.set(x - desplazamiento.x, y, z - desplazamiento.y);
+                    lookAt.set(lx - desplazamiento.x, ly, lz - desplazamiento.y);
+                }
                 estado = ESTADO.PARADO;
                 
                 break;
             case ESTADO.SCROOL:
-
-                camara.position.x += zoom * (lx - x) / 20;
-                camara.position.y += zoom * (ly - y) / 20;
-                camara.position.z += zoom * (lz - z) / 20;
-
+                var yResultante = camara.position.y + zoom * (ly - y) / 20;
+                if (this.estaDentro(-zoom * 2, -zoom * 2) && yResultante > 6){
+                    this.vista._actualizaVentana = true;
+                    camara.position.x += zoom * (lx - x) / 20;
+                    camara.position.y += zoom * (ly - y) / 20;
+                    camara.position.z += zoom * (lz - z) / 20;
+                }
                 estado = ESTADO.PARADO;
                 break;
             case ESTADO.SUELTA:
-                var factor = 1.01;
+                if (this.estaDentro(inercia.x, inercia.y)){
+                    var factor = 1.01;
 
-                camara.position.set(x - inercia.x, y, z - inercia.y);
-                lookAt.set(lx - inercia.x, ly, lz - inercia.y);
+                    camara.position.set(x - inercia.x, y, z - inercia.y);
+                    lookAt.set(lx - inercia.x, ly, lz - inercia.y);
 
-                inercia.x /= factor;
-                inercia.y /= factor;
+                    inercia.x /= factor;
+                    inercia.y /= factor;
 
 
-                if (Math.abs(inercia.x) <= CERO && Math.abs(inercia.y) <= CERO) {
+                    if (Math.abs(inercia.x) <= CERO && Math.abs(inercia.y) <= CERO) {
+                        estado = ESTADO.PARADO;
+                    }
+                }else{
                     estado = ESTADO.PARADO;
                 }
 
@@ -110,9 +120,9 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
     //listeners
 
     function pulsaRaton(evento) {
-
+        
         a = proyectaPulsacion(evento.clientX, evento.clientY);
-        document.addEventListener('mousemove', mueveRaton, false);
+        dom.addEventListener('mousemove', mueveRaton, false);
     }
     ;
 
@@ -137,7 +147,7 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
         }
 
         document.body.style.cursor = 'default';
-        document.removeEventListener('mousemove', mueveRaton);
+        dom.removeEventListener('mousemove', mueveRaton);
     }
     ;
 
@@ -161,83 +171,40 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
         rayo = proyector.pickingRay(vector, camara);
         return rayo.ray.intersectPlane(plano);
     }
+    
+    ControlesMapa2.prototype.estaDentro = function(dx, dy){
+        var ventana = this.getVentanaVision();
+        
+        /*console.log("a" + ventana[0].x + ", " + ventana[0].z);
+        console.log("b" + ventana[1].x + ", " + ventana[1].z);
+        console.log("c" + ventana[2].x + ", " + ventana[2].z);
+        console.log("d" + ventana[3].x + ", " + ventana[3].z);*/
+        var sup = ventana[0].z - dy >= 1;
+        var inf = ventana[3].z - dy <= Vista.Mapa.Y - 1;
+        var izq = ventana[2].x - dx >= 1;
+        var der = ventana[3].x - dx <= Vista.Mapa.X - 1;
+        return sup && inf && der && izq;
+    };
 
-    function getVentanaVision() {
+    ControlesMapa2.prototype.getVentanaVision = function() {
         var a, b, c, d;
 
         a = proyectaPulsacion(0, 0);
         b = proyectaPulsacion(alto, 0);
         c = proyectaPulsacion(0, ancho);
         d = proyectaPulsacion(alto, ancho);
-
         var ventana = [a, b, c, d];
 
         return ventana;
 
-    }
+    };
+    
 
-    //Codigo AJAX
-
-    function peticionAJAX() {
-        var coordenadas = getVentanaVision();
-        /*var json = {
-         mundo0:{x:0,y:0},
-         mundo1:{x:133,y:76},
-         ventana:[]};*/
-        var json = {ventana: []};
-        var ventana = [];
-
-        for (var i = 0; i < coordenadas.length; ++i) {
-            ventana.push({
-                x: coordenadas[i].x / 133, //Deberia haber alguna variable tamanoMapa
-                y: coordenadas[i].z / 76
-            });
-
-            //console.log(coordenadas[i].x + ", " + coordenadas[i].z);
-        }
-
-        json.ventana = ventana;
-
-        var url = "/ProyectoPFC/response";
-
-        if (window.XMLHttpRequest) {
-            peticion = new XMLHttpRequest();
-        }
-        else if (window.ActiveXObject) {
-            peticion = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        peticion.open("Post", url, true);
-        peticion.setRequestHeader('Content-Type', 'applicaction/json');
-        peticion.onreadystatechange = respuestaAJAX;
-
-        peticion.send(JSON.stringify(json));
-
-    }
-
-    function respuestaAJAX() {
-        if (peticion.readyState === READY_STATE_COMPLETE) {
-            if (peticion.status === 200) {
-                parseaRespuesta();
-            }
-        }
-    }
-
-
-    function parseaRespuesta() {
-
-        var municipiosJSON = JSON.parse(peticion.responseText);
-
-        mun = municipiosJSON.municipios;
-    }
-
-    document.addEventListener('mousedown', pulsaRaton, false);
-    document.addEventListener('mouseup', sueltaRaton, false);
-    //document.addEventListener('mouseup', peticionAJAX, false);
-    document.addEventListener('mousewheel', scrollRaton, false);
-    document.addEventListener('DOMMouseScroll', scrollRaton, false); // firefox
-    //document.addEventListener('mousewheel', peticionAJAX, false);
-    //document.addEventListener('DOMMouseScroll', peticionAJAX, false); // firefox
-    document.addEventListener('dblclick', doblePulsacion, false);
+    dom.addEventListener('mousedown', pulsaRaton, false);
+    dom.addEventListener('mouseup', sueltaRaton, false);
+    dom.addEventListener('mousewheel', scrollRaton, false);
+    dom.addEventListener('DOMMouseScroll', scrollRaton, false); // firefox
+    dom.addEventListener('dblclick', doblePulsacion, false);
 
 };
 

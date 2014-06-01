@@ -1,7 +1,15 @@
-<!DOCTYPE web-app
-    PUBLIC  "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
-    "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
-<web-app>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    
     <servlet>
         <servlet-name>MunicipiosVentana</servlet-name>
         <servlet-class>
@@ -11,8 +19,34 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>MunicipiosVentana</servlet-name>
-        <url-pattern>/response</url-pattern>
+        <url-pattern>/ventana</url-pattern>
     </servlet-mapping>
+    
+    
+    <servlet>
+        <servlet-name>CargaMunicipios</servlet-name>
+        <servlet-class>
+            servlets.CargaMunicipios
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CargaMunicipios</servlet-name>
+        <url-pattern>/carga</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>PeticionMunicipio</servlet-name>
+        <servlet-class>
+            servlets.PeticionMunicipio
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PeticionMunicipio</servlet-name>
+        <url-pattern>/peticionmunicipio</url-pattern>
+    </servlet-mapping>
+        
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>

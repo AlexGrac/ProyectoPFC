@@ -16,15 +16,17 @@ ajax.READY_STATE_INTERACTIVE = 3;
 ajax.READY_STATE_COMPLETE = 4;
 
 /* Clase que encapsula la peticion Ajax */
-ajax.PeticionAjax = function(url, onload, onerror, metodo, params, tipoCont) {
+ajax.PeticionAjax = function(url, onload, onerror, metodo, params, tipoCont, contexto) {
     this.peticion = null;
     this.onload = onload;
     this.onerror = (onerror) ? onerror : this.errorDefecto;
+    this.contexto = (contexto) ? contexto : this;
     this.realizaPeticion(url, metodo, params, tipoCont);
 };
 
 
 ajax.PeticionAjax.prototype.realizaPeticion = function(url, metodo, params, tipoCont) {
+    
     if (!metodo) {
         metodo = "GET";
     }
@@ -33,8 +35,9 @@ ajax.PeticionAjax.prototype.realizaPeticion = function(url, metodo, params, tipo
     }
 
     // Diferenciamos entre IE y el resto de navegadores
-    if (window.XMLHTTPRequest) {
-        this.peticion = new XMLHTTPRequest();
+    
+    if (window.XMLHttpRequest) {     
+        this.peticion = new XMLHttpRequest();
     } else if (window.ActiveXObject) {
         this.peticion = new ActiveXObject("Micrososft.XMLHTTP");
     }
@@ -62,9 +65,9 @@ ajax.PeticionAjax.estadoPreparado = function() {
     var peticion = this.peticion;
     var preparado = peticion.readyState;
     var estadoHTTP = peticion.status;
-    if (preparado === ajax.READY_STATE_COMPLETE) {
+    if (preparado === ajax.READY_STATE_COMPLETE && this.onload) {
         if (estadoHTTP === 200 || estadoHTTP === 0) {
-            this.onload.call(this);
+            this.onload.apply(this.contexto, [peticion]);
         } else {
             this.onerror.call(this);
         }

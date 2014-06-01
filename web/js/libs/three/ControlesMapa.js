@@ -37,14 +37,9 @@ ControlesMapa = function(camara, lookAt, dom) {
                 estado = ESTADO.NADA;
                 break;
             case ESTADO.SCROOL:
-                var factor = zoom < 0 ? 1 : -1;
-                
-                console.log(this.lookAt.x + ", " + this.lookAt.z);
-                console.log("posicion " + x + ", " + y + ", " + z);
-
-                this.camara.position.x += factor * (this.lookAt.x - x)/10;
-                this.camara.position.y += factor * (this.lookAt.y - y)/10;
-                this.camara.position.z += factor * (this.lookAt.z - z)/10;
+                camara.position.x += zoom * (lx - x) / 20;
+                camara.position.y += zoom * (ly - y) / 20;
+                camara.position.z += zoom * (lz - z) / 20;
                 
                 estado = ESTADO.NADA;
                 break;
@@ -111,7 +106,7 @@ ControlesMapa = function(camara, lookAt, dom) {
     function scrollRaton(evento) {
         estado = ESTADO.SCROOL;
         zoom = ((typeof evento.wheelDelta !== "undefined") ? (-evento.wheelDelta) : evento.detail);
-        zoom = 100 * ((zoom > 0) ? 1 : -1);
+        zoom = ((zoom < 0) ? 1 : -1);
         //console.log(evento.wheelDelta + ", " + evento.detail );
     }
 

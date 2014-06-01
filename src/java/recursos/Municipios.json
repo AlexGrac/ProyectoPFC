@@ -1,7 +1,6 @@
 {"municipios":
 [{"nombre":"Aguilar de Campoo","poblacion":"7242","longitud":"-4.260222","latitud":"42.792449"},
 {"nombre":"Guijuelo","poblacion":"5971","longitud":"-5.673655","latitud":"40.555142"},
-{"nombre":"San Vicente de Alcántara","poblacion":"5808","longitud":"-7.136951","latitud":"39.360456"},
 {"nombre":"Brihuega","poblacion":"2873","longitud":"-2.870508","latitud":"40.759646"},
 {"nombre":"Castejón","poblacion":"4235","longitud":"-2.519847","latitud":"40.382278"},
 {"nombre":"Alhama de Granada","poblacion":"6062","longitud":"-3.988389","latitud":"37.002518"},
@@ -76,7 +75,6 @@
 {"nombre":"Albacete","poblacion":"169716","longitud":"-1.860070","latitud":"38.997652"},
 {"nombre":"Mula","poblacion":"16941","longitud":"-1.457491","latitud":"37.882392"},
 {"nombre":"Valladolid","poblacion":"317864","longitud":"-4.728381","latitud":"41.652943"},
-{"nombre":"Villanueva de los Infantes","poblacion":"5806","longitud":"-4.483085","latitud":"41.703369"},
 {"nombre":"Puigcerdà","poblacion":"9022","longitud":"1.927728","latitud":"42.431348"},
 {"nombre":"Cervera de Pisuerga","poblacion":"2566","longitud":"-4.499135","latitud":"42.865760"},
 {"nombre":"Ciudad Rodrigo","poblacion":"14080","longitud":"-6.522775","latitud":"40.597151"},
