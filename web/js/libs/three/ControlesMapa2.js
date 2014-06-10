@@ -25,12 +25,11 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
     var dom = (dom !== undefined) ? dom : document;
     var estado = ESTADO.NADA;
     var contadorReloj;
-    var peticion;
-    
+
     // Referencia a su vista para indicar cuando esta parada la camara.
     this.vista = vista;
     this.vista.setControles(this);
-
+    this.primero = true;
     var a = new THREE.Vector3();
     var b = new THREE.Vector3();
     var desplazamiento = new THREE.Vector2();
@@ -41,7 +40,7 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
 
 
     var plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    
+
 
     //variables para el zoom
     var zoom = 1;
@@ -51,10 +50,9 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
     //variables para la inercia
     var inercia = new THREE.Vector2();
 
-
+    
 
     this.actualiza = function() {
-
         var x = camara.position.x;
         var y = camara.position.y;
         var z = camara.position.z;
@@ -66,23 +64,26 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
         contadorReloj++;
         switch (estado) {
             case ESTADO.PARADO:
+                //this.vista._borraMunicipios = true;
                 this.vista.camaraParada();
+                
                 estado = ESTADO.NADA;
-            break;
+                break;
             case ESTADO.ARRASTRA:
                 this.vista._actualizaVentana = true;
-                if (this.estaDentro(desplazamiento.x, desplazamiento.y)){
+                if (this.estaDentro(desplazamiento.x, desplazamiento.y)) {
                     var factor = y > 1 ? y : 1;
                     contadorReloj = 0;
                     camara.position.set(x - desplazamiento.x, y, z - desplazamiento.y);
                     lookAt.set(lx - desplazamiento.x, ly, lz - desplazamiento.y);
                 }
-                estado = ESTADO.PARADO;
                 
+                estado = ESTADO.PARADO;
+
                 break;
             case ESTADO.SCROOL:
                 var yResultante = camara.position.y + zoom * (ly - y) / 20;
-                if (this.estaDentro(-zoom * 2, -zoom * 2) && yResultante > 6){
+                if (this.estaDentro(-zoom * 2, -zoom * 2) && yResultante > 6) {
                     this.vista._actualizaVentana = true;
                     camara.position.x += zoom * (lx - x) / 20;
                     camara.position.y += zoom * (ly - y) / 20;
@@ -91,7 +92,7 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
                 estado = ESTADO.PARADO;
                 break;
             case ESTADO.SUELTA:
-                if (this.estaDentro(inercia.x, inercia.y)){
+                if (this.estaDentro(inercia.x, inercia.y)) {
                     var factor = 1.01;
 
                     camara.position.set(x - inercia.x, y, z - inercia.y);
@@ -104,23 +105,58 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
                     if (Math.abs(inercia.x) <= CERO && Math.abs(inercia.y) <= CERO) {
                         estado = ESTADO.PARADO;
                     }
-                }else{
+                } else {
                     estado = ESTADO.PARADO;
                 }
 
                 break;
-                
+
         }
 
+        if (this.primero){
+            this.primero = false;
+            estado = ESTADO.PARADO;
+        }
 
     };
 
 
+    this.mueveCamara = function(x, y, z) {
+        y = (y !== null) ? y : camara.position.y;
+
+        var lx = camara.position.x - x;
+        var ly = camara.position.y - y;
+        var lz = camara.position.z - z;
+
+        //camara.position.x = x;
+        //camara.position.y = y;
+        //camara.position.z = z;
+
+        lookAt.x -= lx;
+        lookAt.y -= ly;
+        lookAt.z -= lz;
+        
+        var inicio = {x: camara.position.x, y: camara.position.y, z:camara.position.z};
+        var final = {x:x , y:y, z:z};
+        var that = this;
+        var tween = new TWEEN.Tween(inicio)
+                    .to(final, 1000)
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .onUpdate(function(){
+                        camara.position.x = inicio.x;
+                        camara.position.y = inicio.y;
+                        camara.position.z = inicio.z;
+                    }).onComplete(function() {
+                        that.vista.camaraParada();
+                    }).start();
+                    
+    };
+    
 
     //listeners
 
     function pulsaRaton(evento) {
-        
+
         a = proyectaPulsacion(evento.clientX, evento.clientY);
         dom.addEventListener('mousemove', mueveRaton, false);
     }
@@ -158,27 +194,21 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
         zoom = ((zoom < 0) ? 1 : -1);
     }
 
-    function doblePulsacion(evento) {
-        estado = ESTADO.SCROOL;
-        zoom = 5;
-    }
-
     function proyectaPulsacion(x, y) {
         var vector = new THREE.Vector3(x / alto * 2 - 1, -y / ancho * 2 + 1, 0.5);
         var proyector = new THREE.Projector();
         var rayo = new THREE.Raycaster();
-
         rayo = proyector.pickingRay(vector, camara);
         return rayo.ray.intersectPlane(plano);
     }
-    
-    ControlesMapa2.prototype.estaDentro = function(dx, dy){
+
+    ControlesMapa2.prototype.estaDentro = function(dx, dy) {
         var ventana = this.getVentanaVision();
-        
+
         /*console.log("a" + ventana[0].x + ", " + ventana[0].z);
-        console.log("b" + ventana[1].x + ", " + ventana[1].z);
-        console.log("c" + ventana[2].x + ", " + ventana[2].z);
-        console.log("d" + ventana[3].x + ", " + ventana[3].z);*/
+         console.log("b" + ventana[1].x + ", " + ventana[1].z);
+         console.log("c" + ventana[2].x + ", " + ventana[2].z);
+         console.log("d" + ventana[3].x + ", " + ventana[3].z);*/
         var sup = ventana[0].z - dy >= 1;
         var inf = ventana[3].z - dy <= Vista.Mapa.Y - 1;
         var izq = ventana[2].x - dx >= 1;
@@ -188,7 +218,7 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
 
     ControlesMapa2.prototype.getVentanaVision = function() {
         var a, b, c, d;
-
+        
         a = proyectaPulsacion(0, 0);
         b = proyectaPulsacion(alto, 0);
         c = proyectaPulsacion(0, ancho);
@@ -198,14 +228,14 @@ ControlesMapa2 = function(camara, lookAt, vista, dom) {
         return ventana;
 
     };
-    
+
 
     dom.addEventListener('mousedown', pulsaRaton, false);
     dom.addEventListener('mouseup', sueltaRaton, false);
     dom.addEventListener('mousewheel', scrollRaton, false);
     dom.addEventListener('DOMMouseScroll', scrollRaton, false); // firefox
-    dom.addEventListener('dblclick', doblePulsacion, false);
-
+    
+    
 };
 
 

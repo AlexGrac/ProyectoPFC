@@ -27,7 +27,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MunicipiosVentana extends HttpServlet {
-
+    private static final int ACTUAL = 0;
+    private static final int HOY = 1;
+    private static final int DIA1 = 2;
+    private static final int DIA2 = 3;
+    private static final int DIA3 = 4;
+    
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) {
         procesaRespuesta(req, res);
@@ -51,7 +56,8 @@ public class MunicipiosVentana extends HttpServlet {
             
             json = new JSONObject(br.readLine());
             JSONArray ventana = json.getJSONArray("ventana");
-
+            int modo = json.getInt("modo");
+            
             // Extraemos las esquinas de la ventana
             JSONObject coord = ventana.getJSONObject(0);
             CoordenadasWGS84 supIzq = new CoordenadasWGS84(coord.getDouble("x"), coord.getDouble("y"));
@@ -63,10 +69,15 @@ public class MunicipiosVentana extends HttpServlet {
             List<Municipio> filtrados = municipios.consulta(esquinas);
             
             // Pedimos la prevision al spi
+            System.out.println(modo);
             for (Municipio m : filtrados){
                 if (!m.tieneDetalles()){
                     CoordenadasWGS84 coordenadas = new CoordenadasWGS84(m.getLongitud(), m.getLatitud());
-                    DetallesMeteorologicos detalles = servicio.tiempoActual(coordenadas.getLatitud(), coordenadas.getLongitud());
+                    DetallesMeteorologicos detalles;
+                    if (modo == ACTUAL)
+                        detalles = servicio.tiempoActual(coordenadas.getLatitud(), coordenadas.getLongitud());
+                    else
+                        detalles = servicio.prediccion(coordenadas.getLatitud(), coordenadas.getLongitud(), modo);
                     m.setDetalles(detalles);
                 }
             }

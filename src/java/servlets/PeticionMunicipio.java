@@ -41,45 +41,45 @@ public class PeticionMunicipio extends HttpServlet {
             // Obtenemos el parametro y los municipios de la sesion
             String municipio = new String(req.getParameter("municipio").getBytes(), "UTF-8");
             QuadTree<Double, Municipio> municipios = (QuadTree) req.getSession().getAttribute("municipios");
-            
+
             List<Municipio> lista = municipios.getValores();
             Municipio munRespuesta = null;
-            
+
             for (Municipio m : lista) {
                 if (m.getNombre().equals(municipio)) {
                     munRespuesta = m;
                     break;
                 }
             }
-            
-                String nombre;
-                double latitud, longitud;
-                if (munRespuesta != null){
-                    nombre = munRespuesta.getNombre();
-                    longitud = munRespuesta.getLongitud();
-                    latitud = munRespuesta.getLatitud();
-                } else {
-                    nombre = "";
-                    longitud = 0;
-                    latitud = 0;
-                }
-                JSONObject respuesta = new JSONObject();
-                respuesta.put("municipio", nombre);
-                respuesta.put("latitud", latitud);
-                respuesta.put("longitud", longitud);
-                
-                //Enviamos la respuesta
-                res.setContentType("application/json");
-                res.setHeader("Cache-Control", "no-cache");
-                
-                String outString = respuesta.toString();
-                res.getWriter().write(outString);
-                
-            } catch (JSONException ex) {
-                Logger.getLogger(MunicipiosVentana.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(PeticionMunicipio.class.getName()).log(Level.SEVERE, null, ex);
+
+            String nombre;
+            double latitud, longitud;
+            if (munRespuesta != null) {
+                nombre = munRespuesta.getNombre();
+                longitud = munRespuesta.getLongitud();
+                latitud = munRespuesta.getLatitud();
+            } else {
+                nombre = "";
+                longitud = 0;
+                latitud = 0;
             }
+            JSONObject respuesta = new JSONObject();
+            respuesta.put("municipio", nombre);
+            respuesta.put("latitud", latitud);
+            respuesta.put("longitud", longitud);
+
+            //Enviamos la respuesta
+            res.setContentType("application/json");
+            res.setHeader("Cache-Control", "no-cache");
+
+            String outString = respuesta.toString();
+            res.getWriter().write(outString);
+
+        } catch (JSONException ex) {
+            Logger.getLogger(MunicipiosVentana.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(PeticionMunicipio.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 }

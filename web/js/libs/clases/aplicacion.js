@@ -14,7 +14,9 @@ Aplicacion = function() {
     modelo = new Modelo();
     vista = new Vista(modelo);
     controlador = new Controlador(modelo, vista);
-    //modelo.nuevosMunicipios();
+
+    // Iniciamos la primera peticion
+
 
 };
 
@@ -27,22 +29,21 @@ Aplicacion.prototype.inicia = function(parametros) {
     FwWebGL.Aplicacion.prototype.inicia.call(this, parametros);
 
     //Creamos nuestra escena
-    var lookAt = new THREE.Vector3(Vista.Mapa.X / 2, 0, Vista.Mapa.Y / 2);
-    this.camara.position.set(Vista.Mapa.X / 2, 10, Vista.Mapa.Y / 2 + 5);
+    var lookAt = new THREE.Vector3(Vista.Mapa.X / 3, 0, Vista.Mapa.Y / 3);
+    this.camara.position.set(Vista.Mapa.X / 3, 10, Vista.Mapa.Y / 3 + 5);
+    //var lookAt = new THREE.Vector3(56, 0, 46);
+    //this.camara.position.set(56, 29, 61);
     this.camara.lookAt(lookAt);
     var mapa = new Mapa();
 
     mapa.inicia(this);
-    this.anadeObjeto(mapa);
+    //this.anadeObjeto(mapa);
 
-    // Puntos de prueba
-    /*    for (var i = 0; i < 300; ++i) {
-     var punto = new Punto(Math.random() * 133, Math.random() * 76);
-     punto.inicia(this);
-     }*/
+
     var controles = new ControlesMapa2(this.camara, lookAt, vista, parametros.container);
     this.controles = controles;
     this.municipiosEnVentana = [];
+
 
 };
 
@@ -50,18 +51,17 @@ Aplicacion.prototype.inicia = function(parametros) {
 Aplicacion.prototype.actualiza = function() {
     //Actualizamos controles
     this.controles.actualiza();
-    
+
     var altura = this.getCamara().position.y;
     //Actualizamos los municipios
     if (vista._actualizaMunicipios) {
-        console.log("Actualiza municipios");
         vista._actualizaMunicipios = false;
 
         /*for (var i = 0; i < vista._municipiosPintados.length; ++i) {
          this.eliminaObjeto(vista._municipiosPintados[i]);
          }*/
 
-        var actualizar = vista.getMunicipiosSinPintar();
+        var actualizar = vista.getMunicipiosSinActualizar();
         vista._municipiosPintados = [];
         var nuevosParaCache = [];
         for (var i = 0; i < actualizar.length; ++i) {
@@ -72,7 +72,9 @@ Aplicacion.prototype.actualiza = function() {
             } else {
                 var vector = new THREE.Vector3(actualizar[i].x, 1, actualizar[i].y);
                 var texto = actualizar[i].nombre;
-                municipio = new VistaMunicipio(vector, texto, altura);
+                var temperatura = actualizar[i].temperatura;
+                var nubes = actualizar[i].nubes;
+                municipio = new VistaMunicipio(vector, texto, altura, temperatura, nubes);
                 municipio.inicia(this);
                 vista._municipiosPintados.push(municipio);
                 nuevosParaCache.push(municipio);
@@ -89,7 +91,6 @@ Aplicacion.prototype.actualiza = function() {
 
     if (vista._actualizaVentana) {
         vista._actualizaVentana = false;
-        console.log("Actualiza ventana");
         // Eliminamos los objetos de la escena para evitar la sobrecarga
         for (var i = 0; i < this.municipiosEnVentana.length; ++i) {
             this.eliminaObjeto(this.municipiosEnVentana[i].getEtiqueta());
@@ -115,15 +116,14 @@ Aplicacion.prototype.actualiza = function() {
             var colisiona = false;
             for (var j = 0; j < this.municipiosEnVentana.length; ++j) {
                 if (municipio.colisiona(this.municipiosEnVentana[j])) {
-                        colisiona = true; 
-                        break;
+                    colisiona = true;
+                    break;
                 }
             }
 
             // Lo escalamos a razon del nivel de zoom
             if (!colisiona && xMunicipio >= supIzq.x && xMunicipio <= supDer.x &&
-                    yMunicipio >= supIzq.z && yMunicipio <= infIzq.z) {
-
+                    yMunicipio >= supIzq.z && yMunicipio <= infIzq.z /*&& municipio._texto === "Madrid"*/) {
                 if (altura < 12) {
                     municipio.escalaMunicipio(2.5);
                 } else if (altura < 18) {
@@ -145,6 +145,8 @@ Aplicacion.prototype.actualiza = function() {
 };
 
 
+
+
 Mapa = function() {
 
     FwWebGL.Objeto.call(this);
@@ -159,7 +161,7 @@ Mapa.prototype.inicia = function(aplicacion) {
 
     var textura = new THREE.Texture();
     var loader = new THREE.ImageLoader();
-    loader.load('data/mapaWGS84Alpha.png', function(image) {
+    loader.load('data/limites.png', function(image) {
 
         textura.image = image;
         textura.needsUpdate = true;
@@ -168,7 +170,10 @@ Mapa.prototype.inicia = function(aplicacion) {
 
     var materialMapa = new THREE.MeshPhongMaterial({
         map: textura,
-        transparent: true
+        transparent: false,
+        depthWrite : false,
+        blending: THREE.NoBlending
+        //wireframe: true
     });
 
     var objLoader = new THREE.OBJLoader();
@@ -198,9 +203,11 @@ Mapa.prototype.actualiza = function() {
 
 
 
-VistaMunicipio = function(vector, texto, altura) {
+VistaMunicipio = function(vector, texto, altura, temperatura, nubes) {
     this._vector = vector;
     this._texto = texto;
+    this._temperatura = temperatura;
+    this._nubes = nubes;
     this._tamanoBB = 1;
 
     var factor;
@@ -228,8 +235,20 @@ VistaMunicipio = function(vector, texto, altura) {
 
     this._BB = new THREE.Box3(min, max);
 
-    this._etiqueta = new Etiqueta(vector, texto);
-    this._icono = new Icono(vector);
+    this._etiqueta = new Etiqueta(vector, texto, temperatura);
+    
+    // Elegimos el icono dependiendo de la prediccion
+    if (this._nubes <= 5)
+        this._icono = new Sol(vector);
+    else if (this._nubes <= 50)
+        this._icono = new ClarosNubes(vector, 0xeeeeee, 1, 1, 0.5, THREE.NormalBlending);
+    else
+        this._icono = new Nube(vector, 0xffffff, 0.5, 0.25, 1, THREE.NormalBlending);
+    //this._icono = new Icono(vector);
+    //this._icono = new Sol(vector);
+    //this._icono = new Nube(vector, 0xffffff, 0.5, 0.25, 1, THREE.NormalBlending);
+    //this._icono = new ClarosNubes(vector, 0xeeeeee, 1, 1, 0.5, THREE.NormalBlending);
+    //this._icono = new Lluvia(vector, 0xdddddd, 0.5, 1, 1, THREE.NormalBlending, 0.5);
     //this._BB = new CajaEnvolvente(vector);
 };
 
@@ -256,7 +275,7 @@ VistaMunicipio.prototype.escalaMunicipio = function(factor) {
     //caja2.inicia(this._aplicacion, this._BB.max.x - this._BB.min.x, this._BB.max.y - this._BB.min.y, this._BB.max.z - this._BB.min.z);
     // Guardamos la distancia
     this._etiqueta._geometria.position.x = this._vector.x - factor / 2;
-    this._icono._geometria.position.x = this._vector.x + factor / 2;
+    
 };
 
 VistaMunicipio.prototype.getEtiqueta = function() {
@@ -277,57 +296,6 @@ VistaMunicipio.prototype.colisiona = function(municipio) {
 };
 
 
-/*CajaEnvolvente2 = function(vector) {
-    this._vector = vector;
-    this._geometria = null;
-    //console.log("Se esta creando " + texto);
-    FwWebGL.Objeto.call(this);
-};
-
-CajaEnvolvente2.prototype = new FwWebGL.Objeto();
-
-CajaEnvolvente2.prototype.inicia = function(aplicacion, x, y, z) {
-
-    // Esfera
-    var geometriaIcono = new THREE.CubeGeometry(x, y, z);
-    this._geometria = new THREE.Mesh(geometriaIcono, new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true}));
-    this._geometria.position.x = this._vector.x;
-    this._geometria.position.y = this._vector.y;
-    this._geometria.position.z = this._vector.z;
-
-    //etiqueta.add(icono);
-
-    this.setObjeto3D(this._geometria);
-    aplicacion.anadeObjeto(this);
-
-};
-
-
-CajaEnvolvente = function(vector) {
-    this._vector = vector;
-    this._geometria = null;
-    //console.log("Se esta creando " + texto);
-    FwWebGL.Objeto.call(this);
-};
-
-CajaEnvolvente.prototype = new FwWebGL.Objeto();
-
-CajaEnvolvente.prototype.inicia = function(aplicacion) {
-
-    // Esfera
-    var geometriaIcono = new THREE.CubeGeometry(1, 1, 1);
-    this._geometria = new THREE.Mesh(geometriaIcono, new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true}));
-    this._geometria.position.x = this._vector.x;
-    this._geometria.position.y = this._vector.y;
-    this._geometria.position.z = this._vector.z;
-
-    //etiqueta.add(icono);
-
-    this.setObjeto3D(this._geometria);
-    //aplicacion.anadeObjeto(this);
-
-};
-*/
 
 
 Icono = function(vector) {
@@ -356,9 +324,10 @@ Icono.prototype.inicia = function(aplicacion) {
 };
 
 
-Etiqueta = function(vector, texto) {
+Etiqueta = function(vector, texto, temperatura) {
     this._texto = texto;
     this._vector = vector;
+    this._temperatura = temperatura;
     this._geometria = null;
     //console.log("Se esta creando " + texto);
     FwWebGL.Objeto.call(this);
@@ -368,20 +337,46 @@ Etiqueta.prototype = new FwWebGL.Objeto();
 
 Etiqueta.prototype.inicia = function(aplicacion) {
 
-
-
     var fuente = "Arial";
-    var tama = 48;
-    var anchoBorde = 1;
-
-    //var alineamiento = THREE.SpriteAlignment.topLeft;
-
+    var tama = 50;
+    
+    // Coordendas a escribir en el canvas
+    var x = 5;
+    var y = tama;
+   
     var canvas = document.createElement('canvas');
-
     var contexto = canvas.getContext('2d');
     contexto.font = "Bold " + tama + "px " + fuente;
+    
+    // Fondo
+    if (this._temperatura <= 0)
+        contexto.fillStyle = "rgba(153,204,255,0.5)";
+    else if (this._temperatura <= 10)
+        contexto.fillStyle = "rgba(153,255,153,0.5)";
+    else if (this._temperatura <= 20)
+        contexto.fillStyle = "rgba(255,255,153,0.5)";
+    else if (this._temperatura <= 30)
+        contexto.fillStyle = "rgba(255,178,102,0.5)";
+    else if (this._temperatura <= 40)
+        contexto.fillStyle = "rgba(255,51,51,0.5)";
+        
+    contexto.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Borde
+    contexto.strokeStyle = "black";
+    contexto.lineWidth = 4;
+    contexto.rect(1,1,canvas.width - 1,canvas.height - 1);
+    contexto.stroke();
+    
+    //Texto    
+    contexto.fillStyle = "black";
+    if (this._texto.length > 12)
+        this._texto = this._texto.substr(0,10) + "...";
+    contexto.fillText(this._texto, x, y);
+    
+    // El valor 20 es un factor para separar algo las dos lineas
+    contexto.fillText(this._temperatura + "º", x, y + tama + 20);
 
-    contexto.fillText(this._texto, 0, tama);
 
     var textura = new THREE.Texture(canvas);
     textura.needsUpdate = true;
@@ -402,4 +397,3 @@ Etiqueta.prototype.inicia = function(aplicacion) {
 
 
 };
-

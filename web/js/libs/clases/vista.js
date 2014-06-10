@@ -6,48 +6,22 @@ Vista = function(modelo, controlador, controles) {
     Observable.call(this);
 
     this._modelo = modelo;
-    this._controlador = controlador;
+    //this._controlador = controlador;
     this._controles = controles;
     this._actualizaMunicipios = false;
     this._actualizaVentana = false;
+    //this._borraMunicipios = false;
     this._municipiosPintados = []; // Con Vista de municipios
-    this._municipiosSinPintar = []; // Con formato de la vista (coordenadas) para poder pintar
+    this._municipiosSinActualizar = []; // Con formato de la vista (coordenadas) para poder pintar
     this._cacheMunicipios = []; // Con Vista de municipios
+    this._cuadrantesActuales = [[], []];
 
     this._modelo.anadeObservador(Modelo.Evento.NUEVOS_MUNICIPIOS, this, this.municipiosCambiados);
 };
 
+
 Vista.prototype = new Observable();
 
-/*
- Vista.prototype.municipiosCambiados = function() {
- console.log("------------------Municipios Cambiados-----------------");
- var municipios = this._modelo.getCacheMunicipios();
- this._municipiosSinPintar = [];
- 
- for (var i = 0; i < municipios.length; ++i) {
- var indice = this._municipiosPintados.indexOf(municipios[i]);
- if (indice === -1) {
- this._municipiosPintados.push(municipios[i]);
- // Ponemos las coordenadas en funcion del mapa
- var nombre = municipios[i].nombre;
- var poblacion = municipios[i].poblacion;
- var x = municipios[i].longitud;
- var y = municipios[i].latitud;
- console.log(nombre);
- this._municipiosSinPintar.push({
- nombre: nombre,
- poblacion: poblacion,
- x: x * Vista.Mapa.X,
- y: y * Vista.Mapa.Y
- });
- }
- }
- 
- this._actualiza = true;
- 
- };
- */
 /*
  * Sobrarian las caches ya que se va a enviar lo del modelo
  */
@@ -66,36 +40,55 @@ Vista.prototype.getVistaMunicipio = function(nombre){
 Vista.prototype.municipiosCambiados = function() {
     var municipios = this._modelo.getCacheMunicipios();
     
-    this._municipiosSinPintar = [];
+    this._municipiosSinActualizar = [];
     for (var i = 0; i < municipios.length; ++i) {
         // Ponemos las coordenadas en funcion del mapa
-        var nombre = municipios[i].nombre + 
-                ": " + municipios[i].detalles.detalles.temperatura;
-        console.log(nombre);
+        var nombre = municipios[i].nombre;
         var poblacion = municipios[i].poblacion;
         var x = municipios[i].longitud;
         var y = municipios[i].latitud;
-        this._municipiosSinPintar.push({
+        var temperatura = municipios[i].detalles.temperatura;
+        var nubes = municipios[i].detalles.nubes;
+        this._municipiosSinActualizar.push({
             nombre: nombre,
             poblacion: poblacion,
             x: x * Vista.Mapa.X,
-            y: y * Vista.Mapa.Y
+            y: y * Vista.Mapa.Y,
+            temperatura : temperatura,
+            nubes: nubes
         });
     }
-    
     // Avisamos de que la vista debe actualizarse
     this._actualizaMunicipios = true;
 
 };
 
 
-Vista.prototype.getMunicipiosSinPintar = function() {
-    return this._municipiosSinPintar;
+
+Vista.prototype.getMunicipiosSinActualizar = function() {
+    return this._municipiosSinActualizar;
 };
 
 
 Vista.prototype.camaraParada = function() {
-    this.notifica(Vista.Evento.CAMARA_PARADA);
+    var ventana = this.getVentanaVision();
+    var cuadrantes = this.getCuadrantes(ventana);
+    
+    if (cuadrantes[0][0] !== this._cuadrantesActuales[0][0] ||
+            cuadrantes[0][1] !== this._cuadrantesActuales[0][1] ||
+            cuadrantes[1][0] !== this._cuadrantesActuales[1][0] ||
+            cuadrantes[1][1] !== this._cuadrantesActuales[1][1]) {
+        //Hemos cambiado de cuadrantes por lo que realizamos la consulta
+
+        this.notifica(Vista.Evento.CAMARA_PARADA);
+        
+        this._cuadrantesActuales[0][0] = cuadrantes[0][0];
+        this._cuadrantesActuales[0][1] = cuadrantes[0][1];
+        this._cuadrantesActuales[1][0] = cuadrantes[1][0];
+        this._cuadrantesActuales[1][1] = cuadrantes[1][1];
+        
+    }
+
 };
 
 Vista.prototype.setControles = function(controles) {
@@ -104,6 +97,12 @@ Vista.prototype.setControles = function(controles) {
 
 Vista.prototype.getVentanaVision = function() {
     return this._controles.getVentanaVision();
+};
+
+Vista.prototype.mueveCamara = function (x, y){
+    this._controles.mueveCamara(x * Vista.Mapa.X, null, y * Vista.Mapa.Y);
+        
+   
 };
 
 Vista.prototype.getCuadrantes = function(ventana) {
@@ -126,7 +125,7 @@ Vista.prototype.getCuadrantes = function(ventana) {
     else
         supIzq.push(Math.floor((ventana[0].z / Vista.Mapa.Y) * Vista.Cuadrantes.Y));
 
-    // Esquina superior derecha
+    // Esquina inferior derecha
     if (ventana[3].x <= 0)
         infDer.push(0);
     else if (ventana[3].x > Vista.Mapa.X)
@@ -146,6 +145,13 @@ Vista.prototype.getCuadrantes = function(ventana) {
     return cuadrantes;
 
 };
+
+Vista.prototype.limpia = function(){
+    this._cacheMunicipios = [];
+    this._municipiosPintados = [];
+    this._cuadrantesActuales = [[], []];
+};
+
 // Eventos observables
 
 Vista.Evento = [];
@@ -155,8 +161,8 @@ Vista.Evento.CAMARA_PARADA = 0;
 // Constantes Cuadrantes
 
 Vista.Cuadrantes = [];
-Vista.Cuadrantes.X = 5;
-Vista.Cuadrantes.Y = 5;
+Vista.Cuadrantes.X = 10;
+Vista.Cuadrantes.Y = 10;
 
 // Constantes para el mapa
 

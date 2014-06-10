@@ -54,13 +54,25 @@ public class ServicioMeteorologia {
         return detalles;
     }
     
-    public DetallesMeteorologicos prediccion(String ciudad, String pais, Date fecha){
+    public DetallesMeteorologicos prediccion(String ciudad, String pais, int fecha){
         DetallesMeteorologicos detalles = null;
         
         Iterator<IProveedorMeteorologia> servicio = _loader.iterator();
         if (servicio.hasNext()){
             IProveedorMeteorologia p = servicio.next();
             detalles = p.prediccion(ciudad, pais, fecha);
+        }            
+        
+        return detalles;
+    }
+    
+    public DetallesMeteorologicos prediccion(double latitud, double longitud, int dia){
+        DetallesMeteorologicos detalles = null;
+        
+        Iterator<IProveedorMeteorologia> servicio = _loader.iterator();
+        if (servicio.hasNext()){
+            IProveedorMeteorologia p = servicio.next();
+            detalles = p.prediccion(latitud, longitud, dia);
         }            
         
         return detalles;

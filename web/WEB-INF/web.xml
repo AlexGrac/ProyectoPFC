@@ -46,6 +46,18 @@
         <servlet-name>PeticionMunicipio</servlet-name>
         <url-pattern>/peticionmunicipio</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>LimpiaMunicipios</servlet-name>
+        <servlet-class>
+            servlets.LimpiaMunicipios
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LimpiaMunicipios</servlet-name>
+        <url-pattern>/limpia</url-pattern>
+    </servlet-mapping>
         
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>

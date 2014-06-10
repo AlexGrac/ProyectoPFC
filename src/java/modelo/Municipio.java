@@ -19,12 +19,12 @@ public class Municipio {
     int _poblacion;
     DetallesMeteorologicos _detalles;
 
-    public Municipio(String _nombre, double _longitud, double _latitud, int _poblacion) {
+    public Municipio(String _nombre, double _longitud, double _latitud, int _poblacion, DetallesMeteorologicos _detalles) {
         this._nombre = _nombre;
         this._longitud = _longitud;
         this._latitud = _latitud;
         this._poblacion = _poblacion;
-        this._detalles = null;
+        this._detalles = _detalles;
     }
 
     public String getNombre() {

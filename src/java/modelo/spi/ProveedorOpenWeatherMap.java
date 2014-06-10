@@ -9,11 +9,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,8 +33,8 @@ public class ProveedorOpenWeatherMap implements IProveedorMeteorologia {
     }
 
     @Override   
-    public DetallesMeteorologicos realizaPeticion(String url) {
-        DetallesMeteorologicos detalles;
+    public DetallesMeteorologicos realizaPeticionActual(String url) {
+        DetallesMeteorologicos detalles = new DetallesMeteorologicos();
         JSONObject json;
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
@@ -54,31 +51,91 @@ public class ProveedorOpenWeatherMap implements IProveedorMeteorologia {
                 throw new ExcepcionRespuestaInvalida();
             }
             
-            //Rellenamos el mapa de los detalles
-            Map mapaDetalles = new HashMap();
+            DecimalFormat df = new DecimalFormat("#.#");
+            
+            
             // En este objeto va la humedad, la presion y las temperaturas
             JSONObject tiempo = json.getJSONObject("main");
-            mapaDetalles.put("temperatura", tiempo.getDouble("temp") - 273.14);
-            mapaDetalles.put("temperaturaMin", tiempo.getDouble("temp_min") - 273.14);
-            mapaDetalles.put("temperaturaMax", tiempo.getDouble("temp_max") - 273.14);
-            mapaDetalles.put("humedad", tiempo.getInt("humidity"));
-            mapaDetalles.put("presion", tiempo.getInt("pressure"));
+            detalles.setTemperatura(Double.valueOf(df.format(tiempo.getDouble("temp") - 273.15).replace(',', '.')));
+            detalles.setTemperaturaMin(Double.valueOf(df.format(tiempo.getDouble("temp_min") - 273.15).replace(',', '.')));
+            detalles.setTemperaturaMax(Double.valueOf(df.format(tiempo.getDouble("temp_max") - 273.15).replace(',', '.')));
+            detalles.setHumedad(tiempo.getInt("humidity"));
+            detalles.setPresion(tiempo.getInt("pressure"));
             // En este objeto van los datos correspondientes al viento
             JSONObject viento = json.getJSONObject("wind");
-            mapaDetalles.put("velocidadViento", viento.getDouble("speed"));
-            mapaDetalles.put("direccionViento", viento.getDouble("deg"));
-            // En este objeto van los datos correspondientes al viento
+            detalles.setVelocidadViento(viento.getDouble("speed"));
+            detalles.setDireccionViento(viento.getDouble("deg"));
+            // En este objeto van los datos correspondientes a las nubes
             JSONObject nubes = json.getJSONObject("clouds");
-            mapaDetalles.put("nubes", nubes.getInt("all"));
+            detalles.setNubes(nubes.getInt("all"));
             // En este objeto va la prevision de lluvia
             if (json.isNull("rain"))
-                mapaDetalles.put("precipitaciones", "0");
+                detalles.setPrecipitaciones(0);
             else{
-                JSONArray nombres = json.getJSONObject("rain").names();
-                mapaDetalles.put("precipitaciones", nombres.get(0));
+                JSONObject objeto = json.getJSONObject("rain");
+                JSONArray nombres = objeto.names();
+                detalles.setPrecipitaciones(objeto.getDouble(nombres.getString(0)));
             }
             
-            detalles = new DetallesMeteorologicos(mapaDetalles);
+           
+
+        } catch (IOException ex) {
+            System.out.println(ex.toString());
+            detalles = null;
+        } catch (JSONException ex) {
+            System.out.println(ex.toString());
+            detalles = null;
+        } catch (ExcepcionRespuestaInvalida ex) {
+            System.out.println(ex.toString());
+            detalles = null;
+        }        
+        return detalles;
+    }
+    
+    
+    @Override   
+    public DetallesMeteorologicos realizaPeticionPrecidiccion(String url) {
+        DetallesMeteorologicos detalles = new DetallesMeteorologicos();
+        JSONObject json;
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
+            
+            String cadena = "", linea;
+            while ((linea = br.readLine()) != null) {
+                cadena += linea;
+            }
+            
+            // Parseamos la respuesta
+            json = new JSONObject(cadena);            
+            
+            if (json.getInt("cod") != 200){
+                throw new ExcepcionRespuestaInvalida();
+            }
+            
+            DecimalFormat df = new DecimalFormat("#.#");
+            
+            int cnt = json.getInt("cnt");
+            JSONArray lista = json.getJSONArray("list");
+            JSONObject prevision = lista.getJSONObject(cnt - 1);
+            // En este objeto van las temperaturas
+            JSONObject temperatura = prevision.getJSONObject("temp");
+            double tempMedia = (temperatura.getDouble("max") + temperatura.getDouble("min")) / 2 - 273.15;
+            detalles.setTemperatura(Double.valueOf(df.format(tempMedia).replace(',', '.')));
+            detalles.setTemperaturaMin(Double.valueOf(df.format(temperatura.getDouble("min") - 273.15).replace(',', '.')));
+            detalles.setTemperaturaMax(Double.valueOf(df.format(temperatura.getDouble("max") - 273.15).replace(',', '.')));
+            detalles.setHumedad(prevision.getInt("humidity"));
+            detalles.setPresion(prevision.getInt("pressure"));
+            detalles.setVelocidadViento(prevision.getDouble("speed"));
+            detalles.setDireccionViento(prevision.getDouble("deg"));
+            detalles.setNubes(prevision.getInt("clouds"));
+            // En este objeto va la prevision de lluvia
+            if (prevision.isNull("rain"))
+                detalles.setPrecipitaciones(0);
+            else{
+                detalles.setPrecipitaciones(prevision.getDouble("rain"));
+            }
+            
+           
 
         } catch (IOException ex) {
             System.out.println(ex.toString());
@@ -94,20 +151,27 @@ public class ProveedorOpenWeatherMap implements IProveedorMeteorologia {
     }
 
     @Override
-    public DetallesMeteorologicos prediccion(String ciudad, String pais, Date fecha) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public DetallesMeteorologicos prediccion(String ciudad, String pais, int fecha) {
+        String url = _urlBase + "forecast/" + "daily?q=" + ciudad + "," + pais + "&cnt=" + fecha + "&APPID=" + _appID;
+        return realizaPeticionPrecidiccion(url);    
+    }
+
+    @Override
+    public DetallesMeteorologicos prediccion(double latitud, double longitud, int fecha) {
+        String url = _urlBase + "forecast/" + "daily?lat=" + latitud + "&lon=" + longitud + "&cnt=" + fecha + "&APPID=" + _appID;
+        return realizaPeticionPrecidiccion(url);        
     }
 
     @Override
     public DetallesMeteorologicos tiempoActual(String ciudad, String pais) {
         String url = _urlBase + "weather?q=" + ciudad + "," + pais + "&APPID=" + _appID;
-        return realizaPeticion(url);
+        return realizaPeticionActual(url);
     }
 
     @Override
     public DetallesMeteorologicos tiempoActual(double latitud, double longitud) {
         String url = _urlBase + "weather?lat=" + latitud + "&lon=" + longitud + "&APPID=" + _appID;
-        return realizaPeticion(url);
+        return realizaPeticionActual(url);
     }
 
 

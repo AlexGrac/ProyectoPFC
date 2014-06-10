@@ -47,8 +47,8 @@ FwWebGL.Aplicacion.prototype.inicia = function(parametros) {
     escena.datos = this;
 
     // Colocamos una camara en la escena y la iluminamos
-    var camara = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camara.position.set(0, 10, 5);
+    var camara = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camara.position.set(0, 10, 50);
     escena.add(new THREE.AmbientLight(0xffffff));
 
     escena.add(camara);
@@ -75,30 +75,7 @@ FwWebGL.Aplicacion.prototype.inicia = function(parametros) {
         spritey.position.x = Math.random() * 133;
         spritey.position.y = 5;
         spritey.position.z = Math.random() * 76;
-        //escena.add(spritey);
     }
-
-
-    /*var group = new THREE.Geometry();
-     
-     var geometry = new THREE.CubeGeometry(0.5, 0.5, 0.5);
-     var material = new THREE.MeshBasicMaterial({color: 0xffffff * Math.random()});
-     var cube = new THREE.Mesh(geometry);
-     var materials = [];
-     
-     for (var i = 0; i < 300; ++i) {
-     
-     materials.push(material);
-     //THREE.GeometryUtils.setMaterialIndex(cube.geometry,i);
-     cube.position.x = Math.random() * 133;
-     cube.position.z = Math.random() * 76;
-     THREE.GeometryUtils.merge(group, cube);
-     
-     }
-     group = new THREE.Mesh(group, material);
-     escena.add(group);*/
-    // Activamos los manejadores de eventos
-    //this.anadeManejadorDom();
 
     /*this.stats = new Stats();
     this.stats.domElement.style.position = 'absolute';
@@ -110,11 +87,13 @@ FwWebGL.Aplicacion.prototype.inicia = function(parametros) {
 
 // Bucle infinito de la aplicacion
 FwWebGL.Aplicacion.prototype.ejecuta = function() {
+    
     var that = this;
     requestAnimationFrame(function() {
         that.ejecuta();
     });
     this.actualiza();
+    TWEEN.update();
     this.renderer.render(this.escena, this.camara);
 };
 
@@ -189,7 +168,12 @@ FwWebGL.Objeto.prototype.actualiza = function() {
 // Mueve el objeto a una nueva posicion
 FwWebGL.Objeto.prototype.traslada = function(x, y, z) {
     if (this.objeto3D) {
-        this.objeto3D.position.set(x, y, z);
+        if (x !== null)
+            this.objeto3D.position.x = x;
+        if (y !== null)
+            this.objeto3D.position.x = x;
+        if (z !== null)
+            this.objeto3D.position.x = x;
     }
 };
 
