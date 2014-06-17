@@ -37,8 +37,9 @@ public class DetallesMeteorologicos {
     double _direccionViento;
     int _nubes;
     double _precipitaciones;
+    boolean _tormenta;
 
-    public DetallesMeteorologicos(double _temperatura, double _temperaturaMax, double _temperaturaMin, int _humedad, double _presion, double _velocidadViento, double _direccionViento, int _nubes, double _precipitaciones) {
+    public DetallesMeteorologicos(double _temperatura, double _temperaturaMax, double _temperaturaMin, int _humedad, double _presion, double _velocidadViento, double _direccionViento, int _nubes, double _precipitaciones, boolean _tormenta) {
         this._temperatura = _temperatura;
         this._temperaturaMax = _temperaturaMax;
         this._temperaturaMin = _temperaturaMin;
@@ -48,10 +49,19 @@ public class DetallesMeteorologicos {
         this._direccionViento = _direccionViento;
         this._nubes = _nubes;
         this._precipitaciones = _precipitaciones;
+        this._tormenta = _tormenta;
     }
 
     public DetallesMeteorologicos() {
         
+    }
+
+    public void setTormenta(boolean _tormenta) {
+        this._tormenta = _tormenta;
+    }
+
+    public boolean isTormenta() {
+        return _tormenta;
     }
 
     public double getTemperatura() {

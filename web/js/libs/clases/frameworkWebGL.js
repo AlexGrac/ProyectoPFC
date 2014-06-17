@@ -41,7 +41,7 @@ FwWebGL.Aplicacion.prototype.inicia = function(parametros) {
     var renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvas});
     renderer.setSize(window.innerWidth, window.innerHeight);
     domCont.appendChild(renderer.domElement);
-
+    renderer.sortObjects = false;
     // Creamos una escena Three
     var escena = new THREE.Scene();
     escena.datos = this;
@@ -58,30 +58,15 @@ FwWebGL.Aplicacion.prototype.inicia = function(parametros) {
     escena.add(raiz);
 
     // Creamos un proyector para manejar las pulsaciones de raton
-    var proyector = new THREE.Projector();
+//    var proyector = new THREE.Projector();
 
     this.domCont = domCont;
     this.renderer = renderer;
     this.escena = escena;
     this.camara = camara;
-    this.proyector = proyector;
+//    this.proyector = proyector;
     this.raiz = raiz;
 
-
-
-    for (var i = 0; i < 100; i++)
-    {
-        var spritey = makeTextSprite("Jaén", {fontsize: 48, backgroundColor: {r: 255, g: 100, b: 100, a: 1}});
-        spritey.position.x = Math.random() * 133;
-        spritey.position.y = 5;
-        spritey.position.z = Math.random() * 76;
-    }
-
-    /*this.stats = new Stats();
-    this.stats.domElement.style.position = 'absolute';
-    this.stats.domElement.style.bottom = '0px';
-    this.stats.domElement.style.zIndex = 100;
-    domCont.appendChild(this.stats.domElement);*/
 
 };
 
@@ -239,81 +224,3 @@ FwWebGL.Objeto.prototype.getApp = function() {
     var escena = this.getEscena();
     return escena ? escena.datos : null;
 };
-
-
-
-
-function makeTextSprite(message, parameters)
-{
-    if (parameters === undefined)
-        parameters = {};
-
-    var fontface = parameters.hasOwnProperty("fontface") ?
-            parameters["fontface"] : "Arial";
-
-    var fontsize = parameters.hasOwnProperty("fontsize") ?
-            parameters["fontsize"] : 18;
-
-    var borderThickness = parameters.hasOwnProperty("borderThickness") ?
-            parameters["borderThickness"] : 1;
-
-    var borderColor = parameters.hasOwnProperty("borderColor") ?
-            parameters["borderColor"] : {r: 0, g: 0, b: 0, a: 1.0};
-
-    var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
-            parameters["backgroundColor"] : {r: 255, g: 255, b: 255, a: 1.0};
-
-    var spriteAlignment = THREE.SpriteAlignment.topLeft;
-
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    context.font = "Bold " + fontsize + "px " + fontface;
-
-    // get size data (height depends only on font size)
-    var metrics = context.measureText(message);
-    var textWidth = metrics.width;
-
-    // background color
-    context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
-            + backgroundColor.b + "," + backgroundColor.a + ")";
-    // border color
-    context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + ","
-            + borderColor.b + "," + borderColor.a + ")";
-
-    context.lineWidth = borderThickness;
-    //roundRect(context, borderThickness / 2, borderThickness / 2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
-    // 1.4 is extra height factor for text below baseline: g,j,p,q.
-
-    // text color
-    context.fillStyle = "rgba(0, 0, 0, 1.0)";
-
-    context.fillText(message, borderThickness, fontsize + borderThickness);
-
-    // canvas contents will be used for a texture
-    var texture = new THREE.Texture(canvas);
-    texture.needsUpdate = true;
-
-    var spriteMaterial = new THREE.SpriteMaterial(
-            {map: texture, useScreenCoordinates: false, alignment: spriteAlignment});
-    var sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(10, 5, 1.0);
-    return sprite;
-}
-
-// function for drawing rounded rectangles
-function roundRect(ctx, x, y, w, h, r)
-{
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-}

@@ -6,19 +6,19 @@
          version="3.0">
     <session-config>
         <session-timeout>
-            30
+            1
         </session-timeout>
     </session-config>
     
     <servlet>
-        <servlet-name>MunicipiosVentana</servlet-name>
+        <servlet-name>PeticionVentana</servlet-name>
         <servlet-class>
-            servlets.MunicipiosVentana
+            servlets.PeticionVentana
         </servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>MunicipiosVentana</servlet-name>
+        <servlet-name>PeticionVentana</servlet-name>
         <url-pattern>/ventana</url-pattern>
     </servlet-mapping>
     

@@ -68,6 +68,10 @@ public class ProveedorOpenWeatherMap implements IProveedorMeteorologia {
             // En este objeto van los datos correspondientes a las nubes
             JSONObject nubes = json.getJSONObject("clouds");
             detalles.setNubes(nubes.getInt("all"));
+            JSONArray codigoArray = json.getJSONArray("weather");
+            int codigo = codigoArray.getJSONObject(0).getInt("id");
+            boolean hayTormenta = codigo >= 200 && codigo < 300;
+            detalles.setTormenta(hayTormenta);
             // En este objeto va la prevision de lluvia
             if (json.isNull("rain"))
                 detalles.setPrecipitaciones(0);
@@ -128,6 +132,10 @@ public class ProveedorOpenWeatherMap implements IProveedorMeteorologia {
             detalles.setVelocidadViento(prevision.getDouble("speed"));
             detalles.setDireccionViento(prevision.getDouble("deg"));
             detalles.setNubes(prevision.getInt("clouds"));
+            JSONArray codigoArray = prevision.getJSONArray("weather");
+            int codigo = codigoArray.getJSONObject(0).getInt("id");
+            boolean hayTormenta = codigo >= 200 && codigo < 300;
+            detalles.setTormenta(hayTormenta);
             // En este objeto va la prevision de lluvia
             if (prevision.isNull("rain"))
                 detalles.setPrecipitaciones(0);

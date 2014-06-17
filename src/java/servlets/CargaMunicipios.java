@@ -65,7 +65,6 @@ public class CargaMunicipios extends HttpServlet {
             QuadTree<Double, Municipio> municipios = new QuadTree<Double, Municipio>();
 
             // Creamos los municipios y normalizamos las coordendas
-            //System.out.println("Empezamos");
             for (int i = 0; i < tama; ++i) {
                 JSONObject mun = municipiosJSON.getJSONObject(i);
                 String nombre = mun.getString("nombre");
@@ -74,10 +73,9 @@ public class CargaMunicipios extends HttpServlet {
                 double latitud = CoordenadasWGS84.normalizaLatitud(mun.getDouble("latitud"));
                 int poblacion = mun.getInt("poblacion");
                 //DetallesMeteorologicos detalles = servicio.tiempoActual(mun.getDouble("latitud"), mun.getDouble("longitud"));
-                //System.out.println(nombre + ", " + detalles.getDetalles("temperatura"));
                 municipios.inserta(longitud, latitud, new Municipio(nombre, longitud, latitud, poblacion, null));
             }
-            //municipios.imprime();
+            
             // Introducimos el QuadTree en la sesion
             req.getSession().setAttribute("municipios", municipios);
 

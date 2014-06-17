@@ -107,11 +107,13 @@ a:hover {
     color: #ffffff
 }
 h1{ font: 20px Georgia; margin: 0 0 1em 0; color: #ffffff }
+h2{ font: 14px Georgia; margin: 0 0 1em 0; color: #ffffff}
 #toggle{ position: absolute; right: 10px; top: 10px; text-align: right }
 
 #webgl
 { 
     background-color:#AFE7F7;
+    background-color:#FFFFFF;
     position: absolute; 
     left: 0; 
     top: 0 

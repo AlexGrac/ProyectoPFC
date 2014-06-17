@@ -9,7 +9,7 @@
 Modelo = function() {
     Observable.call(this);
 
-    this._cacheMunicipios = [];
+    this._nuevosMunicipios = [];
     //this._observadoresMunicipios = [];
 };
 
@@ -23,13 +23,13 @@ Modelo.prototype.nuevosMunicipios = function(respuesta) {
     console.log(JSON.stringify(municipiosJSON.municipios));*/
     var json = JSON.parse(respuesta.responseText);
     var municipios = json.municipios;
-    this._cacheMunicipios = municipios;
+    this._nuevosMunicipios = municipios;
     
     this.notifica(Modelo.Evento.NUEVOS_MUNICIPIOS);
 };
 
 Modelo.prototype.getCacheMunicipios = function(){
-    return this._cacheMunicipios;
+    return this._nuevosMunicipios;
 };
 
 

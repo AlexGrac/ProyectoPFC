@@ -49,13 +49,19 @@ Vista.prototype.municipiosCambiados = function() {
         var y = municipios[i].latitud;
         var temperatura = municipios[i].detalles.temperatura;
         var nubes = municipios[i].detalles.nubes;
+        var tormenta = municipios[i].detalles.tormenta;
+        var precipitaciones = municipios[i].detalles.precipitaciones;
+        var nieve = municipios[i].detalles.nieve;
         this._municipiosSinActualizar.push({
             nombre: nombre,
             poblacion: poblacion,
             x: x * Vista.Mapa.X,
             y: y * Vista.Mapa.Y,
             temperatura : temperatura,
-            nubes: nubes
+            nubes: nubes,
+            precipitaciones:precipitaciones,
+            tormenta:tormenta,
+            nieve:nieve
         });
     }
     // Avisamos de que la vista debe actualizarse
@@ -100,7 +106,7 @@ Vista.prototype.getVentanaVision = function() {
 };
 
 Vista.prototype.mueveCamara = function (x, y){
-    this._controles.mueveCamara(x * Vista.Mapa.X, null, y * Vista.Mapa.Y);
+    this._controles.mueveCamara(x * Vista.Mapa.X, 6, y * Vista.Mapa.Y);
         
    
 };
@@ -161,8 +167,8 @@ Vista.Evento.CAMARA_PARADA = 0;
 // Constantes Cuadrantes
 
 Vista.Cuadrantes = [];
-Vista.Cuadrantes.X = 10;
-Vista.Cuadrantes.Y = 10;
+Vista.Cuadrantes.X = 5;
+Vista.Cuadrantes.Y = 5;
 
 // Constantes para el mapa
 

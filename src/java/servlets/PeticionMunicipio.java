@@ -76,7 +76,7 @@ public class PeticionMunicipio extends HttpServlet {
             res.getWriter().write(outString);
 
         } catch (JSONException ex) {
-            Logger.getLogger(MunicipiosVentana.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PeticionVentana.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(PeticionMunicipio.class.getName()).log(Level.SEVERE, null, ex);
         }

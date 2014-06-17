@@ -31,16 +31,16 @@ Aplicacion.prototype.inicia = function(parametros) {
     //Creamos nuestra escena
     var lookAt = new THREE.Vector3(Vista.Mapa.X / 3, 0, Vista.Mapa.Y / 3);
     this.camara.position.set(Vista.Mapa.X / 3, 10, Vista.Mapa.Y / 3 + 5);
-    //var lookAt = new THREE.Vector3(56, 0, 46);
-    //this.camara.position.set(56, 29, 61);
     this.camara.lookAt(lookAt);
+
+    var mar = new CapaMar();
+    mar.inicia(this);
+
     var mapa = new Mapa();
-
     mapa.inicia(this);
-    //this.anadeObjeto(mapa);
 
 
-    var controles = new ControlesMapa2(this.camara, lookAt, vista, parametros.container);
+    var controles = new ControlesMapa(this.camara, lookAt, vista, parametros.container);
     this.controles = controles;
     this.municipiosEnVentana = [];
 
@@ -74,7 +74,10 @@ Aplicacion.prototype.actualiza = function() {
                 var texto = actualizar[i].nombre;
                 var temperatura = actualizar[i].temperatura;
                 var nubes = actualizar[i].nubes;
-                municipio = new VistaMunicipio(vector, texto, altura, temperatura, nubes);
+                var tormenta = actualizar[i].tormenta;
+                var precipitaciones = actualizar[i].precipitaciones;
+                var nieve = actualizar[i].nieve;
+                municipio = new VistaMunicipio(vector, texto, altura, temperatura, nubes, tormenta, precipitaciones, nieve);
                 municipio.inicia(this);
                 vista._municipiosPintados.push(municipio);
                 nuevosParaCache.push(municipio);
@@ -161,7 +164,7 @@ Mapa.prototype.inicia = function(aplicacion) {
 
     var textura = new THREE.Texture();
     var loader = new THREE.ImageLoader();
-    loader.load('data/limites.png', function(image) {
+    loader.load('data/mapaWGS84.png', function(image) {
 
         textura.image = image;
         textura.needsUpdate = true;
@@ -170,14 +173,13 @@ Mapa.prototype.inicia = function(aplicacion) {
 
     var materialMapa = new THREE.MeshPhongMaterial({
         map: textura,
-        transparent: false,
-        depthWrite : false,
-        blending: THREE.NoBlending
-        //wireframe: true
+        transparent: true,
+        depthWrite: false
+                //wireframe: true
     });
 
     var objLoader = new THREE.OBJLoader();
-    objLoader.load('data/DEMEspana25.obj', function(object) {
+    objLoader.load('data/DEMEspana.obj', function(object) {
 
         object.traverse(function(child) {
 
@@ -197,17 +199,37 @@ Mapa.prototype.inicia = function(aplicacion) {
 
 };
 
-Mapa.prototype.actualiza = function() {
-    //console.log(this.objeto3D.geometry.vertices.length);
+
+CapaMar = function() {
+
+    FwWebGL.Objeto.call(this);
+
+};
+
+CapaMar.prototype = new FwWebGL.Objeto();
+
+CapaMar.prototype.inicia = function(aplicacion) {
+    var plano = new THREE.PlaneGeometry(500, 500);
+     var material = new THREE.MeshBasicMaterial({color: 0xafe7f7/*depthWrite: false, transparent:false*/});
+     var malla = new THREE.Mesh(plano, material);
+     malla.position.x = 66;
+     malla.position.y = -1;
+     malla.position.z = 38;
+     malla.rotation.x = -Math.PI / 2;
+
+    this.setObjeto3D(malla);
+    aplicacion.anadeObjeto(this);
+
 };
 
 
 
-VistaMunicipio = function(vector, texto, altura, temperatura, nubes) {
+VistaMunicipio = function(vector, texto, altura, temperatura, nubes, tormenta) {
     this._vector = vector;
     this._texto = texto;
     this._temperatura = temperatura;
     this._nubes = nubes;
+    this._tormenta = tormenta;
     this._tamanoBB = 1;
 
     var factor;
@@ -237,19 +259,25 @@ VistaMunicipio = function(vector, texto, altura, temperatura, nubes) {
 
     this._etiqueta = new Etiqueta(vector, texto, temperatura);
     
+    var precip3h = (this._precipitaciones / 3 - 2) / 58;
+    var nieve3h = (this._nieve * 10 / 3 - 2) / 58;
+    
     // Elegimos el icono dependiendo de la prediccion
-    if (this._nubes <= 5)
+    
+    if (this._tormenta){
+        this._icono = new Tormenta(vector, 0xaaaaaa, 0.5, 1, THREE.NormalBlending);
+    }else if (nieve3h > 0)
+        this._icono = new Nieve(vector, 0xdddddd, 0.5, 5, 1, THREE.NormalBlending,nieve3h);
+    else if (precip3h > 0)
+        this._icono = new Lluvia(vector, 0xdddddd, 0.5, 5, 1, THREE.NormalBlending,precip3h);
+    else if (this._nubes <= 5)
         this._icono = new Sol(vector);
     else if (this._nubes <= 50)
         this._icono = new ClarosNubes(vector, 0xeeeeee, 1, 1, 0.5, THREE.NormalBlending);
     else
         this._icono = new Nube(vector, 0xffffff, 0.5, 0.25, 1, THREE.NormalBlending);
-    //this._icono = new Icono(vector);
-    //this._icono = new Sol(vector);
-    //this._icono = new Nube(vector, 0xffffff, 0.5, 0.25, 1, THREE.NormalBlending);
-    //this._icono = new ClarosNubes(vector, 0xeeeeee, 1, 1, 0.5, THREE.NormalBlending);
-    //this._icono = new Lluvia(vector, 0xdddddd, 0.5, 1, 1, THREE.NormalBlending, 0.5);
-    //this._BB = new CajaEnvolvente(vector);
+    
+   
 };
 
 VistaMunicipio.prototype.inicia = function(aplicacion) {
@@ -275,7 +303,7 @@ VistaMunicipio.prototype.escalaMunicipio = function(factor) {
     //caja2.inicia(this._aplicacion, this._BB.max.x - this._BB.min.x, this._BB.max.y - this._BB.min.y, this._BB.max.z - this._BB.min.z);
     // Guardamos la distancia
     this._etiqueta._geometria.position.x = this._vector.x - factor / 2;
-    
+
 };
 
 VistaMunicipio.prototype.getEtiqueta = function() {
@@ -301,7 +329,7 @@ VistaMunicipio.prototype.colisiona = function(municipio) {
 Icono = function(vector) {
     this._vector = vector;
     this._geometria = null;
-    //console.log("Se esta creando " + texto);
+    
     FwWebGL.Objeto.call(this);
 };
 
@@ -339,41 +367,43 @@ Etiqueta.prototype.inicia = function(aplicacion) {
 
     var fuente = "Arial";
     var tama = 50;
-    
+
     // Coordendas a escribir en el canvas
     var x = 5;
     var y = tama;
-   
+
     var canvas = document.createElement('canvas');
     var contexto = canvas.getContext('2d');
     contexto.font = "Bold " + tama + "px " + fuente;
-    
+
     // Fondo
     if (this._temperatura <= 0)
-        contexto.fillStyle = "rgba(153,204,255,0.5)";
+        contexto.fillStyle = "rgba(255,255,255,0.5)";
     else if (this._temperatura <= 10)
-        contexto.fillStyle = "rgba(153,255,153,0.5)";
+        contexto.fillStyle = "rgba(153,204,255,0.5)";
     else if (this._temperatura <= 20)
-        contexto.fillStyle = "rgba(255,255,153,0.5)";
+        contexto.fillStyle = "rgba(153,255,153,0.5)";
     else if (this._temperatura <= 30)
+        contexto.fillStyle = "rgba(255,255,153,0.5)";
+    else if (this._temperatura <= 35)
         contexto.fillStyle = "rgba(255,178,102,0.5)";
-    else if (this._temperatura <= 40)
+    else
         contexto.fillStyle = "rgba(255,51,51,0.5)";
-        
+
     contexto.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Borde
     contexto.strokeStyle = "black";
     contexto.lineWidth = 4;
-    contexto.rect(1,1,canvas.width - 1,canvas.height - 1);
+    contexto.rect(1, 1, canvas.width - 1, canvas.height - 1);
     contexto.stroke();
-    
+
     //Texto    
     contexto.fillStyle = "black";
     if (this._texto.length > 12)
-        this._texto = this._texto.substr(0,10) + "...";
+        this._texto = this._texto.substr(0, 10) + "...";
     contexto.fillText(this._texto, x, y);
-    
+
     // El valor 20 es un factor para separar algo las dos lineas
     contexto.fillText(this._temperatura + "º", x, y + tama + 20);
 
