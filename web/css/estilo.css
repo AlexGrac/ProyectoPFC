@@ -129,6 +129,12 @@ h2{ font: 14px Georgia; margin: 0 0 1em 0; color: #ffffff}
     color: #ffffff
 }
 
+#cargando
+{
+    color: #ffffff;
+    visibility: hidden
+}
+
 #canvasMunicipio
 {
     border:1px solid #d3d3d3

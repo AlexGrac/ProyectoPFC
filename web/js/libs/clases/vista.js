@@ -1,5 +1,8 @@
-/* 
- * Paquete vista
+/*
+ * @author: Alejandro Graciano Segura
+ * 
+ * Paquete Vista
+ * 
  */
 
 Vista = function(modelo, controlador, controles) {
@@ -22,9 +25,7 @@ Vista = function(modelo, controlador, controles) {
 
 Vista.prototype = new Observable();
 
-/*
- * Sobrarian las caches ya que se va a enviar lo del modelo
- */
+
 
 Vista.prototype.getVistaMunicipio = function(nombre){
     //console.log("---------COMPARAR MUNICIPIO-------");
@@ -42,7 +43,6 @@ Vista.prototype.municipiosCambiados = function() {
     
     this._municipiosSinActualizar = [];
     for (var i = 0; i < municipios.length; ++i) {
-        // Ponemos las coordenadas en funcion del mapa
         var nombre = municipios[i].nombre;
         var poblacion = municipios[i].poblacion;
         var x = municipios[i].longitud;
@@ -63,6 +63,7 @@ Vista.prototype.municipiosCambiados = function() {
             tormenta:tormenta,
             nieve:nieve
         });
+
     }
     // Avisamos de que la vista debe actualizarse
     this._actualizaMunicipios = true;
@@ -86,12 +87,14 @@ Vista.prototype.camaraParada = function() {
             cuadrantes[1][1] !== this._cuadrantesActuales[1][1]) {
         //Hemos cambiado de cuadrantes por lo que realizamos la consulta
 
-        this.notifica(Vista.Evento.CAMARA_PARADA);
-        
         this._cuadrantesActuales[0][0] = cuadrantes[0][0];
         this._cuadrantesActuales[0][1] = cuadrantes[0][1];
         this._cuadrantesActuales[1][0] = cuadrantes[1][0];
         this._cuadrantesActuales[1][1] = cuadrantes[1][1];
+        
+        this.notifica(Vista.Evento.CAMARA_PARADA);
+        
+
         
     }
 
@@ -167,8 +170,8 @@ Vista.Evento.CAMARA_PARADA = 0;
 // Constantes Cuadrantes
 
 Vista.Cuadrantes = [];
-Vista.Cuadrantes.X = 5;
-Vista.Cuadrantes.Y = 5;
+Vista.Cuadrantes.X = 3;
+Vista.Cuadrantes.Y = 3;
 
 // Constantes para el mapa
 

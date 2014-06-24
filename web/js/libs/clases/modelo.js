@@ -1,7 +1,7 @@
-
 /*
- * Paquete Modelo
+ * @author: Alejandro Graciano Segura
  * 
+ * Paquete Modelo
  * 
  */
 
@@ -10,7 +10,6 @@ Modelo = function() {
     Observable.call(this);
 
     this._nuevosMunicipios = [];
-    //this._observadoresMunicipios = [];
 };
 
 Modelo.prototype = new Observable();
@@ -18,9 +17,9 @@ Modelo.prototype = new Observable();
 
 // Vamos a mandar solo la peticion
 Modelo.prototype.nuevosMunicipios = function(respuesta) {
+    
+    document.getElementById("cargando").style.visibility = "hidden";
 
-    /*var municipiosJSON = JSON.parse(respuesta.responseText);
-    console.log(JSON.stringify(municipiosJSON.municipios));*/
     var json = JSON.parse(respuesta.responseText);
     var municipios = json.municipios;
     this._nuevosMunicipios = municipios;

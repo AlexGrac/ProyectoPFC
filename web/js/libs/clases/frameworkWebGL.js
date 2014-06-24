@@ -66,13 +66,18 @@ FwWebGL.Aplicacion.prototype.inicia = function(parametros) {
     this.camara = camara;
 //    this.proyector = proyector;
     this.raiz = raiz;
-
+//    this.stats = new Stats();
+//    this.stats.setMode(0);
+//    this.stats.domElement.style.position = 'absolute';
+//    this.stats.domElement.style.left = '0px';
+//    this.stats.domElement.style.top = '0px';
+//    domCont.appendChild(this.stats.domElement);
 
 };
 
 // Bucle infinito de la aplicacion
 FwWebGL.Aplicacion.prototype.ejecuta = function() {
-    
+
     var that = this;
     requestAnimationFrame(function() {
         that.ejecuta();
@@ -84,7 +89,7 @@ FwWebGL.Aplicacion.prototype.ejecuta = function() {
 
 // Metodo que actualiza la escena dentro del metodo ejecuta()
 FwWebGL.Aplicacion.prototype.actualiza = function() {
-    //this.stats.update();
+//    this.stats.update();
     for (var i = 0; i < this.objetos.length; ++i) {
         this.objetos[i].actualiza();
     }
@@ -107,18 +112,17 @@ FwWebGL.Aplicacion.prototype.eliminaObjeto = function(objeto) {
     if (indice > -1) {
         this.objetos.splice(indice, 1);
 
-        // Si es renderizable, se elimina de la escena
-        if (objeto.objeto3D) {
+        // Si es renderizable, se elimina de la escena y se limpia de la memoria
+        if (objeto.objeto3D) 
             this.raiz.remove(objeto.objeto3D);
-        }
     }
 };
 
-// Manejadores de eventos
-/*
- FwWebGL.Aplicacion.prototype.anadeManejadorDom = function(){
- window.addEventListener('resize', function(e){this.redimensionaVentana(e);}, false);
- };*/
+FwWebGL.Aplicacion.prototype.objetoVisible = function(objeto, visible) {
+    objeto.setVisible(visible);
+};
+
+
 
 FwWebGL.Aplicacion.prototype.redimensionaVentana = function() {
     this.renderer.setSize(this.domCont.offsetWidth, this.domCont.offsetHeight);
@@ -204,6 +208,17 @@ FwWebGL.Objeto.prototype.eliminaHijo = function(hijo) {
             this.objeto3D.remove(hijo.objeto3D);
         }
     }
+};
+
+FwWebGL.Objeto.prototype.setVisible = function(visible) {
+    if (this.objeto3D) {
+        this.objeto3D.traverse(function(hijo) {
+
+            hijo.visible = visible;
+
+        });
+    }
+
 };
 
 // Metodos utiles

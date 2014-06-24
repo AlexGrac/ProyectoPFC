@@ -1,5 +1,13 @@
 
 /*
+ * @author: Alejandro Graciano Segura
+ * 
+ * Objetos que representan los iconos atmosféricos
+ * 
+ */
+
+
+/*
  * Clase que representa el icono de Sol
  */
 Sol = function(vector) {
@@ -30,7 +38,7 @@ Sol.prototype.inicia = function(aplicacion) {
             });
 
     this._sprite = new THREE.Sprite(spriteMaterial);
-    this._sprite.scale.set(5, 5, 1);
+    this._sprite.scale.set(4, 4, 1);
     mallaEsfera.add(this._sprite); // this centers the glow at the mesh
     mallaEsfera.position.x = this._posicion.x;
     mallaEsfera.position.y = this._posicion.y;
@@ -43,7 +51,7 @@ Sol.prototype.inicia = function(aplicacion) {
 
 Sol.prototype.escala = function(x, y, z) {
     this._geometria.scale.set(x / 3, y / 3, z / 3);
-    this._sprite.scale.set(x * 2, y * 2, 1);
+    this._sprite.scale.set(x * 1.3, y * 1.3, 1);
     this._geometria.position.x = this._posicion.x + x / 2;
 };
 
@@ -382,47 +390,3 @@ Tormenta.prototype.escala = function(x, y, z) {
     this._malla.position.x = this._posicion.x + x / 2;
     this._malla.position.z = this._posicion.z + z * 1.25;
 };
-
-
-
-//function Tormenta() {
-//
-//
-//    this.descripcion = "tormenta";
-//
-//    var map = THREE.ImageUtils.loadTexture("data/materiales/lightning-single1.png");
-//    var map1 = THREE.ImageUtils.loadTexture("data/materiales/lightning-single2.png");
-//    var map2 = THREE.ImageUtils.loadTexture("data/materiales/lightning-single3.png");
-//    var texturas = [map, map1, map2];
-//    var random = Math.floor(Math.random() * 3);
-//    var material = new THREE.MeshBasicMaterial({depthWrite: false, map: texturas[random], color: 0xffff00, transparent: true, blending: THREE.AdditiveBlending});
-//    var plano = new THREE.PlaneGeometry(10, 10);
-//    var malla = new THREE.Mesh(plano, material);
-//    malla.rotation.x = Math.PI / 2;
-//    malla.position.set(0, 0, -4);
-//
-//    malla.scale.set(0.5, 0.5, 1.0);
-//
-//    var rangoX = 2;
-//    var rangoY = 5;
-//    var nube = new Nube(0xaaaaaa, rangoX, rangoX, 10);
-//    nube.geometria.position.z = 5;
-//
-//
-//    this.geometria = malla;
-//    nube.geometria.add(this.geometria);
-//    this.geometria = nube.geometria;
-//
-//
-//
-//
-//    this.animacion = function() {
-//        material.opacity = material.opacity >= 1 ? 0 : material.opacity + 0.02;
-//        if (material.opacity === 0) {
-//            material.map = texturas[random++ % 3];
-//        }
-//
-//
-//    };
-//
-//}

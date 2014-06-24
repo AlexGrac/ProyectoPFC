@@ -1,13 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * @author: Alejandro Graciano Segura
+ * 
+ * Servlet que devuelve las coordenadas de un municipio del sistema.
  */
 package servlets;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,13 +38,15 @@ public class PeticionMunicipio extends HttpServlet {
         try {
             // Obtenemos el parametro y los municipios de la sesion
             String municipio = new String(req.getParameter("municipio").getBytes(), "UTF-8");
+            municipio = municipio.toLowerCase();
             QuadTree<Double, Municipio> municipios = (QuadTree) req.getSession().getAttribute("municipios");
 
             List<Municipio> lista = municipios.getValores();
             Municipio munRespuesta = null;
 
             for (Municipio m : lista) {
-                if (m.getNombre().equals(municipio)) {
+                String minusculas = m.getNombre().toLowerCase();
+                if (minusculas.equals(municipio)) {
                     munRespuesta = m;
                     break;
                 }
@@ -69,7 +69,7 @@ public class PeticionMunicipio extends HttpServlet {
             respuesta.put("longitud", longitud);
 
             //Enviamos la respuesta
-            res.setContentType("application/json");
+            res.setContentType("application/json; charset=UTF-8");
             res.setHeader("Cache-Control", "no-cache");
 
             String outString = respuesta.toString();

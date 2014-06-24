@@ -18,7 +18,7 @@ and open the template in the editor.
         <script src="js/libs/other/Stats.js"></script>
         <script src="js/libs/other/contenedorTexturas.js"></script>
         <script src="js/libs/clases/frameworkWebGL.js"></script>
-        <script src="js/libs/three/controlesMapa.js"></script>
+        <script src="js/libs/clases/controlesMapa.js"></script>
         <script src="js/libs/clases/observable.js"></script>
         <script src="js/libs/clases/modelo.js"></script>
         <script src="js/libs/clases/controlador.js"></script>
@@ -51,8 +51,9 @@ and open the template in the editor.
                 completaComboBox();
                 var contenedorWebGL = document.getElementById("webgl");
                 var app = new Aplicacion();
-                app.inicia({container: contenedorWebGL});
-                app.ejecuta();
+                app.cargaMapa({container: contenedorWebGL});
+                //app.inicia({container: contenedorWebGL});
+                //app.ejecuta();
             };
             
             
@@ -63,7 +64,7 @@ and open the template in the editor.
         <div id="webgl"  ></div>
 
         <div id="title" class="info hide">
-            <h1>Sistema web para la visualización 3D de datos atmosféricos</h1>
+            <h1>Sistema Web para la Visualización 3D de Datos Atmosféricos</h1>
             <h2>PFC realizado por Alejandro Graciano Segura</h2>
             <div id="descripcion">
                 Introduce un municipio para visualizar su previsión:
@@ -77,7 +78,9 @@ and open the template in the editor.
 
             </select>
 
-
+            <div id="cargando">
+                Realizando Petición...
+            </div>
         </div>
 
 

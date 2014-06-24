@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * @author: Alejandro Graciano Segura
+ * 
+ * Servlet que borra los detalles meteorológicos de memoria cuando se cambia de modo de previsión.
  */
 package servlets;
 

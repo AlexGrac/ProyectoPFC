@@ -1,30 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ *
+ * @author Graciano
+ * 
+ * Clase auxiliar para facilitar el tratamiento de valores
+ *
  */
 
 package modelo.spi;
 
 import java.util.Map;
 
-/**
- *
- * @author Graciano
- * 
- * Clase auxiliar para facilitar el tratamiento de valores
- * Contiene un mapa que alberga cada uno de los detalles, se puede recuperar con el método getDetalles pasando como 
- * parámetro.
- * -temperatura
- * -temperaturaMax
- * -temperaturaMin
- * -humedad
- * -presion
- * -velocidadViento
- * -direccionViento
- * -nubes
- * -precipitaciones
- */
+
 public class DetallesMeteorologicos {
     
     //Map<String,Object> _detalles;

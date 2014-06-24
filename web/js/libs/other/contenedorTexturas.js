@@ -1,3 +1,10 @@
+/*
+ * @author: Alejandro Graciano Segura
+ * 
+ * Objeto que controla el uso de las texturas
+ * 
+ */
+
 
 ContenedorTexturas = [];
 

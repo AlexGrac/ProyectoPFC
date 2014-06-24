@@ -1,3 +1,10 @@
+/*
+ * @author: Alejandro Graciano Segura
+ * 
+ * Objeto que representa el patrón observador (observable)
+ * 
+ */
+
 Observable = function(){
     this._observadores = [];
 };

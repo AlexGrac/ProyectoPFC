@@ -1,10 +1,14 @@
-/* 
- * Paquete aplicacion
+/*
+ * @author: Alejandro Graciano Segura
+ * 
+ * Paquete Aplicacion
+ * 
  */
 
 var modelo;
 var controlador;
 var vista;
+var mapa;
 
 Aplicacion = function() {
 
@@ -29,15 +33,15 @@ Aplicacion.prototype.inicia = function(parametros) {
     FwWebGL.Aplicacion.prototype.inicia.call(this, parametros);
 
     //Creamos nuestra escena
-    var lookAt = new THREE.Vector3(Vista.Mapa.X / 3, 0, Vista.Mapa.Y / 3);
-    this.camara.position.set(Vista.Mapa.X / 3, 10, Vista.Mapa.Y / 3 + 5);
+    var lookAt = new THREE.Vector3(46, 0, 43);
+    this.camara.position.set(46, 35, 61);
     this.camara.lookAt(lookAt);
 
     var mar = new CapaMar();
     mar.inicia(this);
 
-    var mapa = new Mapa();
-    mapa.inicia(this);
+    var mapaObjeto = new Mapa();
+    mapaObjeto.inicia(this);
 
 
     var controles = new ControlesMapa(this.camara, lookAt, vista, parametros.container);
@@ -57,9 +61,6 @@ Aplicacion.prototype.actualiza = function() {
     if (vista._actualizaMunicipios) {
         vista._actualizaMunicipios = false;
 
-        /*for (var i = 0; i < vista._municipiosPintados.length; ++i) {
-         this.eliminaObjeto(vista._municipiosPintados[i]);
-         }*/
 
         var actualizar = vista.getMunicipiosSinActualizar();
         vista._municipiosPintados = [];
@@ -86,9 +87,7 @@ Aplicacion.prototype.actualiza = function() {
 
         }
         vista._cacheMunicipios = vista._cacheMunicipios.concat(nuevosParaCache);
-        /*for (var i=0; i<vista._municipiosPintados.length; ++i){
-         this.anadeObjeto(vista._municipiosPintados[i]);
-         }*/
+
         vista._actualizaVentana = true;
     }
 
@@ -109,33 +108,39 @@ Aplicacion.prototype.actualiza = function() {
         var infIzq = ventana[2];
         var infDer = ventana[3];
 
+        var margen = 5;
+
 
         for (var i = 0; i < vista._municipiosPintados.length; ++i) {
             var municipio = vista._municipiosPintados[i];
             var xMunicipio = municipio._vector.x;
             var yMunicipio = municipio._vector.z;
 
+            if (altura < 12) {
+                municipio.escalaMunicipio(2.5);
+            } else if (altura < 18) {
+                municipio.escalaMunicipio(4.5);
+            } else if (altura < 24) {
+                municipio.escalaMunicipio(6.5);
+            } else {
+                municipio.escalaMunicipio(8.5);
+            }
+
+
             // Comprobamos si colisiona
             var colisiona = false;
+            this.escena.updateMatrixWorld();
             for (var j = 0; j < this.municipiosEnVentana.length; ++j) {
                 if (municipio.colisiona(this.municipiosEnVentana[j])) {
+                    //console.log("colisiona con " + this.municipiosEnVentana[j]._texto);
                     colisiona = true;
                     break;
                 }
             }
 
-            // Lo escalamos a razon del nivel de zoom
-            if (!colisiona && xMunicipio >= supIzq.x && xMunicipio <= supDer.x &&
-                    yMunicipio >= supIzq.z && yMunicipio <= infIzq.z /*&& municipio._texto === "Madrid"*/) {
-                if (altura < 12) {
-                    municipio.escalaMunicipio(2.5);
-                } else if (altura < 18) {
-                    municipio.escalaMunicipio(4.5);
-                } else if (altura < 24) {
-                    municipio.escalaMunicipio(6.5);
-                } else {
-                    municipio.escalaMunicipio(8.5);
-                }
+            if (!colisiona && xMunicipio >= supIzq.x - margen && xMunicipio <= supDer.x + margen &&
+                    yMunicipio >= supIzq.z - margen && yMunicipio <= infIzq.z + margen /*&& municipio._texto === "Madrid"*/) {
+
                 this.municipiosEnVentana.push(municipio);
                 this.anadeObjeto(municipio.getEtiqueta());
                 this.anadeObjeto(municipio.getIcono());
@@ -148,18 +153,7 @@ Aplicacion.prototype.actualiza = function() {
 };
 
 
-
-
-Mapa = function() {
-
-    FwWebGL.Objeto.call(this);
-
-};
-
-Mapa.prototype = new FwWebGL.Objeto();
-
-Mapa.prototype.inicia = function(aplicacion) {
-
+Aplicacion.prototype.cargaMapa = function(parametros) {
     var that = this;
 
     var textura = new THREE.Texture();
@@ -192,10 +186,28 @@ Mapa.prototype.inicia = function(aplicacion) {
             }
 
         });
-        that.setObjeto3D(object);
-        aplicacion.anadeObjeto(that);
+        mapa = object;
+        that.inicia(parametros);
+        that.ejecuta();
 
     });
+};
+
+Mapa = function() {
+
+    FwWebGL.Objeto.call(this);
+
+};
+
+Mapa.prototype = new FwWebGL.Objeto();
+
+Mapa.prototype.inicia = function(aplicacion) {
+
+
+    this.setObjeto3D(mapa);
+    aplicacion.anadeObjeto(this);
+
+
 
 };
 
@@ -210,12 +222,12 @@ CapaMar.prototype = new FwWebGL.Objeto();
 
 CapaMar.prototype.inicia = function(aplicacion) {
     var plano = new THREE.PlaneGeometry(500, 500);
-     var material = new THREE.MeshBasicMaterial({color: 0xafe7f7/*depthWrite: false, transparent:false*/});
-     var malla = new THREE.Mesh(plano, material);
-     malla.position.x = 66;
-     malla.position.y = -1;
-     malla.position.z = 38;
-     malla.rotation.x = -Math.PI / 2;
+    var material = new THREE.MeshBasicMaterial({color: 0x5167a4/*depthWrite: false, transparent:false*/});
+    var malla = new THREE.Mesh(plano, material);
+    malla.position.x = 66;
+    malla.position.y = -1;
+    malla.position.z = 38;
+    malla.rotation.x = -Math.PI / 2;
 
     this.setObjeto3D(malla);
     aplicacion.anadeObjeto(this);
@@ -224,13 +236,15 @@ CapaMar.prototype.inicia = function(aplicacion) {
 
 
 
-VistaMunicipio = function(vector, texto, altura, temperatura, nubes, tormenta) {
+VistaMunicipio = function(vector, texto, altura, temperatura, nubes, tormenta, precipitaciones, nieve) {
     this._vector = vector;
     this._texto = texto;
     this._temperatura = temperatura;
     this._nubes = nubes;
     this._tormenta = tormenta;
-    this._tamanoBB = 1;
+    this._precipitaciones = precipitaciones;
+    this._nieve = nieve;
+    this._tamanoBB = 0.5;
 
     var factor;
 
@@ -244,63 +258,56 @@ VistaMunicipio = function(vector, texto, altura, temperatura, nubes, tormenta) {
         factor = 8.5;
     }
 
+    this._caja = new Icono(vector);
+
     var min = new THREE.Vector3();
     var max = new THREE.Vector3();
-
-    max.setX((this._vector.x + factor) * this._tamanoBB);
-    max.setY((this._vector.y + factor / 2) * this._tamanoBB);
-    max.setZ((this._vector.z + factor / 2) * this._tamanoBB);
-
-    min.setX((this._vector.x - factor) * this._tamanoBB);
-    min.setY((this._vector.y - factor / 2) * this._tamanoBB);
-    min.setZ((this._vector.z - factor / 2) * this._tamanoBB);
 
     this._BB = new THREE.Box3(min, max);
 
     this._etiqueta = new Etiqueta(vector, texto, temperatura);
-    
-    var precip3h = (this._precipitaciones / 3 - 2) / 58;
-    var nieve3h = (this._nieve * 10 / 3 - 2) / 58;
-    
+
+    var precip3h = (this._precipitaciones) / 10;
+    var nieve3h = this._nieve;
+
     // Elegimos el icono dependiendo de la prediccion
-    
-    if (this._tormenta){
+
+    if (this._tormenta) {
         this._icono = new Tormenta(vector, 0xaaaaaa, 0.5, 1, THREE.NormalBlending);
-    }else if (nieve3h > 0)
-        this._icono = new Nieve(vector, 0xdddddd, 0.5, 5, 1, THREE.NormalBlending,nieve3h);
+    } else if (nieve3h > 0)
+        this._icono = new Nieve(vector, 0xdddddd, 0.5, 5, 1, THREE.NormalBlending, nieve3h);
     else if (precip3h > 0)
-        this._icono = new Lluvia(vector, 0xdddddd, 0.5, 5, 1, THREE.NormalBlending,precip3h);
+        this._icono = new Lluvia(vector, 0xdddddd, 0.5, 5, 1, THREE.NormalBlending, precip3h);
     else if (this._nubes <= 5)
         this._icono = new Sol(vector);
     else if (this._nubes <= 50)
-        this._icono = new ClarosNubes(vector, 0xeeeeee, 1, 1, 0.5, THREE.NormalBlending);
+        this._icono = new ClarosNubes(vector, 0xeeeeee, 1, 1, 0.5, THREE.AdditiveBlending);
     else
         this._icono = new Nube(vector, 0xffffff, 0.5, 0.25, 1, THREE.NormalBlending);
-    
-   
+
+
 };
 
 VistaMunicipio.prototype.inicia = function(aplicacion) {
     this._etiqueta.inicia(aplicacion);
     this._icono.inicia(aplicacion);
-    //this._BB.inicia(aplicacion);
+    this._caja.inicia(aplicacion);
 };
 
 VistaMunicipio.prototype.escalaMunicipio = function(factor) {
     this._etiqueta.escala(factor, factor / 2, 1.0);
     this._icono.escala(factor, factor, factor);
+    this._caja.escala(factor * 2, factor, factor);
     //this._BB.escala(this._tamanoBB * factor * 2,this._tamanoBB * factor,this._tamanoBB * factor);
 
-    this._BB.max.x = (this._vector.x + factor) * this._tamanoBB;
-    this._BB.max.y = (this._vector.y + factor / 2) * this._tamanoBB;
-    this._BB.max.z = (this._vector.z + factor / 2) * this._tamanoBB;
+    this._BB.max.x = (this._vector.x + factor);
+    this._BB.max.y = (this._vector.y + factor / 2);
+    this._BB.max.z = (this._vector.z + factor / 2);
 
-    this._BB.min.x = (this._vector.x - factor) * this._tamanoBB;
-    this._BB.min.y = (this._vector.y - factor / 2) * this._tamanoBB;
-    this._BB.min.z = (this._vector.z - factor / 2) * this._tamanoBB;
+    this._BB.min.x = (this._vector.x - factor);
+    this._BB.min.y = (this._vector.y - factor / 2);
+    this._BB.min.z = (this._vector.z - factor / 2);
 
-    //var caja2 = new CajaEnvolvente2(this._vector);
-    //caja2.inicia(this._aplicacion, this._BB.max.x - this._BB.min.x, this._BB.max.y - this._BB.min.y, this._BB.max.z - this._BB.min.z);
     // Guardamos la distancia
     this._etiqueta._geometria.position.x = this._vector.x - factor / 2;
 
@@ -314,13 +321,15 @@ VistaMunicipio.prototype.getIcono = function() {
     return this._icono;
 };
 
-/*VistaMunicipio.prototype.getBB = function(){
- return this._BB;
- };*/
+VistaMunicipio.prototype.getBB = function() {
+    return this._caja;
+};
 
 
 VistaMunicipio.prototype.colisiona = function(municipio) {
+
     return this._BB.isIntersectionBox(municipio._BB);
+
 };
 
 
@@ -329,7 +338,7 @@ VistaMunicipio.prototype.colisiona = function(municipio) {
 Icono = function(vector) {
     this._vector = vector;
     this._geometria = null;
-    
+
     FwWebGL.Objeto.call(this);
 };
 

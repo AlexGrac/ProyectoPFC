@@ -1,7 +1,7 @@
-/* 
+/*
+ * @author: Alejandro Graciano Segura
  * 
- * 
- * 
+ * Paquete que se encarga de las peticiones AJAX
  * 
  */
 

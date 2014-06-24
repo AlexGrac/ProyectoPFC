@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * @author: Alejandro Graciano Segura
+ * 
+ * Servlet que devuelve los municipios con sus previsiones dentro de una ventana de visión
  */
 package servlets;
 
@@ -80,7 +80,7 @@ public class PeticionVentana extends HttpServlet {
                     m.setDetalles(detalles);
                 }
             }
-            
+            //System.out.println("-------------------------------");
             Collections.sort(filtrados, new ComparadorMunicipios());
             
 
@@ -89,7 +89,7 @@ public class PeticionVentana extends HttpServlet {
             
             //Enviamos la respuesta
             
-            res.setContentType("application/json");
+            res.setContentType("application/json; charset=UTF-8");
             res.setHeader("Cache-Control", "no-cache");
             
             String outString = respuesta.toString();
